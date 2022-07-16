@@ -1,0 +1,158 @@
+<?php
+    header('Content-Type: text/html; charset=utf-8');
+    session_start();
+    require_once "settings.php";
+
+    if (!isset($_SESSION["current_folder"])) {
+        $_SESSION["current_folder"] = ROOT_FOLDER;
+    }
+
+    if ($_POST && isset($_POST["folder"])) {
+        $_SESSION["current_folder"] = $_SESSION["current_folder"] . $_POST["folder"] . "/";
+    }
+
+    //GO BACK
+    if (isset($_GET["goBack"])) {
+        if ($_GET["goBack"] == "root") {
+            $_SESSION["current_folder"] = ROOT_FOLDER;
+        } else {
+            $stepBack = $_GET["goBack"];
+            $folders = explode("/", $_SESSION["current_folder"]);
+            $folders = array_slice($folders, 0, count($folders) - $stepBack);
+            $_SESSION["current_folder"] = implode("/", $folders) . "/";
+        }
+    }
+
+    //delete all params from url
+    echo "<script>window.history.replaceState('', '', window.location.pathname);</script>";
+    //echo $_SESSION["current_folder"];
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enplated Mirror</title>
+
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" type="image/png" href="https://mirror.k-cermak.com/data/enplated-syncer/png-favicon.png"/> <!-- !!!!!!!!!!!!!!!!!!!!!!! -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-nightfall.min.css" rel="stylesheet" media="(prefers-color-scheme: dark)">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="partials/js/folderManager.js"></script>
+    <link rel="stylesheet" href="partials/css/folders.css">
+</head>
+<body>
+    <style>
+        .row {
+            margin: 0;
+        }
+        header {
+            padding: 10px 0px 30px 0px;
+        }
+    </style>
+
+    <header>
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Enplated Mirror</h1>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="row">
+            <div class="col-sm-9">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <?php
+                                echo generatePath();
+                            ?>
+                        </h5>
+                        <div>
+                            <div class="row">
+                                <?php
+                                    echo getFolders();
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-sm-3">info</div>
+        </div>
+    </main>
+
+    <?php
+        function generatePath() {
+            //count / in root folder
+            $count = substr_count(ROOT_FOLDER, "/");
+
+            //split $_SESSION["current_folder"] into array
+            $path_array = explode("/", $_SESSION["current_folder"]);
+            $path_array_length = count($path_array);
+            $path_string = '<a href="?goBack=root"><button type="button" class="btn btn-secondary">My Drive</button></a> / ';
+            for ($i = $count; $i < $path_array_length; $i++) {
+                if ($path_array[$i] != "") {
+                    if ($i == $path_array_length - 2) {
+                        $path_string .= '<button type="button" class="btn btn-secondary" disabled>' . $path_array[$i] . '</button> /';
+                    } else {
+                        $path_string .= '<a href="?goBack=' . ($path_array_length - $i - 1) . '"><button type="button" class="btn btn-secondary">' . $path_array[$i] . '</button></a> / ';
+                    }
+                }
+            }
+            return $path_string;
+        }
+
+        function getFolders() {
+            $folders = array();
+            $files = scandir($_SESSION["current_folder"]);
+            foreach ($files as $file) {
+                if ($file != "." && $file != ".." && is_dir($_SESSION["current_folder"]."/".$file)) {
+                    array_push($folders, $file);
+                }
+            }
+
+            //convert array to string
+            $foldersString = "";
+            foreach ($folders as $folder) {
+                if ($folder != "." && $folder != "..") {
+                    $foldersString .= '
+                        <div class="card text-center folderDataFolder m-1" style="width: 8rem;">
+                            <img class="card-img-top mx-auto" src="partials/icons/folder.svg" alt="Folder icon" style="max-width:4rem;">
+                            <div class="card-body">
+                                <h6>'. $folder . '</h6>
+                            </div>
+
+                            <form method="POST">
+                                <input type="hidden" name="folder" value="'.$folder.'">
+                                <button type="submit" class="btn btn-secondary submitButton" style="display:none;">Submit</button>
+                            </form>
+                        </div>
+                    ';
+                }
+            }
+            return $foldersString;
+        }
+
+
+        function generateData() {
+            $data = "";
+            $files = scandir($_SESSION["current_folder"]);
+            foreach ($files as $file) {
+                if ($file != "." && $file != "..") {
+                    
+                }
+            }
+            return $data;
+        }
+    ?>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>
