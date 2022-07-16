@@ -76,6 +76,7 @@
                             <div class="row">
                                 <?php
                                     echo getFolders();
+                                    echo generateFiles();
                                 ?>
                             </div>
                         </div>
@@ -84,7 +85,7 @@
             </div>
 
 
-            <div class="col-sm-3">info</div>
+            <div class="col-sm-3"></div>
         </div>
     </main>
 
@@ -141,15 +142,136 @@
         }
 
 
-        function generateData() {
-            $data = "";
+        function generateFiles() {
+            $files = array();
             $files = scandir($_SESSION["current_folder"]);
+            $filesString = "";
             foreach ($files as $file) {
-                if ($file != "." && $file != "..") {
-                    
+                if ($file != "." && $file != ".." && !is_dir($_SESSION["current_folder"]."/".$file)) {
+                    $filesString .= '
+                        <div class="card text-center folderDataFile m-1" style="width: 8rem;">
+                            <img class="card-img-top mx-auto" src="' . generateFileIcon($file) . '" alt="File icon" style="max-width:4rem;">
+                            <div class="card-body">
+                                <h6>'. $file . '</h6>
+                            </div>
+                        </div>
+                    ';
                 }
             }
-            return $data;
+            return $filesString;            
+        }
+
+        function generateFileIcon($file) {
+            $folder = "partials/icons/";
+            $extension = pathinfo($file, PATHINFO_EXTENSION);
+
+            do {
+                if ($extension == "") {
+                    $extension = "folder";
+                    break;
+                }
+                $extension = strtolower($extension);
+                if ($extension == "jpg" || $extension == "jpeg" || $extension == "png" || $extension == "gif") {
+                    $folder .= "image.svg";
+                    break;
+                }
+                if ($extension == "mp3" || $extension == "wav" || $extension == "flac") {
+                    $folder .= "audio.svg";
+                    break;
+                }
+                if ($extension == "mp4" || $extension == "avi" || $extension == "mkv") {
+                    $folder .= "video.svg";
+                    break;
+                }
+                if ($extension == "pdf") {
+                    $folder .= "pdf.svg";
+                    break;
+                }
+                if ($extension == "doc" || $extension == "docx") {
+                    $folder .= "word.svg";
+                    break;
+                }
+                if ($extension == "xls" || $extension == "xlsx") {
+                    $folder .= "excel.svg";
+                    break;
+                }
+                if ($extension == "ppt" || $extension == "pptx") {
+                    $folder .= "powerpoint.svg";
+                    break;
+                }
+                if ($extension == "zip" || $extension == "rar") {
+                    $folder .= "zip.svg";
+                    break;
+                }
+                if ($extension == "txt") {
+                    $folder .= "txt.svg";
+                    break;
+                }
+                if ($extension == "html") {
+                    $folder .= "html.svg";
+                    break;
+                }
+                if ($extension == "js") {
+                    $folder .= "js.svg";
+                    break;
+                }
+                if ($extension == "css") {
+                    $folder .= "css.svg";
+                    break;
+                }
+                if ($extension == "xml") {
+                    $folder .= "xml.svg";
+                    break;
+                }
+                if ($extension == "sql") {
+                    $folder .= "sql.svg";
+                    break;
+                }
+                if ($extension == "php") {
+                    $folder .= "php.svg";
+                    break;
+                }
+                if ($extension == "py") {
+                    $folder .= "python.svg";
+                    break;
+                }
+                if ($extension == "rb") {
+                    $folder .= "ruby.svg";
+                    break;
+                }
+                if ($extension == "java") {
+                    $folder .= "java.svg";
+                    break;
+                }
+                if ($extension == "c") {
+                    $folder .= "c.svg";
+                    break;
+                }
+                if ($extension == "cpp") {
+                    $folder .= "cpp.svg";
+                    break;
+                }
+                if ($extension == "cs") {
+                    $folder .= "cs.svg";
+                    break;
+                }
+                if ($extension == "h") {
+                    $folder .= "h.svg";
+                    break;
+                }
+                if ($extension == "hpp") {
+                    $folder .= "hpp.svg";
+                    break;
+                }
+                if ($extension == "json") {
+                    $folder .= "json.svg";
+                    break;
+                }
+
+                $folder .= "file.svg";
+            } while (false);
+
+            return $folder;
         }
     ?>
     

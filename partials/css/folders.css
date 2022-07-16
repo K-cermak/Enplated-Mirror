@@ -1,4 +1,4 @@
-.folderDataFolder {
+.folderDataFolder, .folderDataFile {
     transition: 0.3s;
     border: none;
 }
@@ -6,4 +6,8 @@
 .folderDataFolder:hover {
     background-color: #3d3d3d;
     cursor: pointer;
+}
+
+.folderDataFile:hover {
+    background-color: #3d3d3d;
 }
