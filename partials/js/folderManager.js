@@ -4,6 +4,7 @@ window.addEventListener('load', function () {
     selectFile();
     noFileSelected();
     setRefreshButton();
+    setAddFolderButton();
 });
 
 function selectBody() {
@@ -85,5 +86,12 @@ function deselectAllClear() {
 function setRefreshButton() {
     document.querySelector('.refreshButton').addEventListener('click', function () {
         window.location.reload();
+    });
+}
+
+function setAddFolderButton() {
+    document.querySelector('.addFolderButton').addEventListener('click', function () {
+        var myModal = new bootstrap.Modal(document.getElementById('addFolderModal'))
+        myModal.show()
     });
 }

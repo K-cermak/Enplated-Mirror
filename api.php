@@ -1,4 +1,5 @@
 <?php
+    session_start();
     //Verify login!
 
     if ($_POST && isset($_POST["fileInfo"])) {
@@ -69,6 +70,44 @@
         die();
     }
 
+    if ($_POST && isset($_POST["newFolderName"])) {
+        if ($_POST["newFolderName"] != "") {
+            $newFolderName = $_POST["newFolderName"];
+
+            if (validateFolderName($newFolderName) == false) {
+                header("Location: index.php?folderCreate=prohibitedChars");
+                die();
+            }
+
+            //check if folder exist
+            if (file_exists($_SESSION["current_folder"] . $newFolderName)) {
+                header("Location: index.php?folderCreate=exist");
+                die();
+            }
+
+            //create folder
+            mkdir($_SESSION["current_folder"] . $newFolderName);
+            header("Location: index.php?folderCreate=ok");
+            die();
+        
+        }
+        header("Location: index.php?folderCreate=error");
+        die();
+    }
+
+    function validateFolderName($folderName) {
+        if (strpos($folderName, "..") !== false) {
+            return false;
+        }
+        if (strpos($folderName, ".") !== false) {
+            return false;
+        }
+        //if contain / or \ or : or * or ? or " or < or > or |
+        if (strpos($folderName, "/") !== false || strpos($folderName, "\\") !== false || strpos($folderName, ":") !== false || strpos($folderName, "*") !== false || strpos($folderName, "?") !== false || strpos($folderName, "\"") !== false || strpos($folderName, "<") !== false || strpos($folderName, ">") !== false || strpos($folderName, "|") !== false) {
+            return false;
+        }
+        return true;
+    }
 
     function calcNumberOfFiles($folderName) {
         $files = 0;

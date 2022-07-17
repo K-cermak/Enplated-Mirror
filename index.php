@@ -22,16 +22,12 @@
             $_SESSION["current_folder"] = implode("/", $folders) . "/";
         }
     }
-
-    //delete all params from url
-    echo "<script>window.history.replaceState('', '', window.location.pathname);</script>";
-    echo "<script>const currentFolder = '". $_SESSION["current_folder"] ."'; </script>";
-
     $protocol = $_SERVER["REQUEST_SCHEME"];
     $host = $_SERVER["HTTP_HOST"];
     $serverFolder = str_replace(SERVER_ROOT, "", $_SESSION["current_folder"]);
     $webUrl = $protocol . "://" . $host . "/" . $serverFolder;
 
+    echo "<script>const currentFolder = '". $_SESSION["current_folder"] ."'; </script>";
     echo "<script>const webUrl = '" . $webUrl . "'; </script>";
 ?>
 
@@ -74,6 +70,22 @@
     <main>
         <div class="row">
             <div class="col-sm-9">
+                <?php
+                    if (isset($_GET["folderCreate"])) {
+                        if ($_GET["folderCreate"] == "ok") {
+                            echo generateMessages("success", "Folder created successfully");
+                        }
+                        if ($_GET["folderCreate"] == "error") {
+                            echo generateMessages("warning", "Error creating folder");
+                        }
+                        if ($_GET["folderCreate"] == "exist") {
+                            echo generateMessages("warning", "Folder already exists");
+                        }
+                        if ($_GET["folderCreate"] == "prohibitedChars") {
+                            echo generateMessages("warning", "Prohibited characters in folder name");
+                        }
+                    }
+                ?>
                 <div class="card">
                     <div class="card-body">
                         <div class="row card-title">
@@ -83,7 +95,8 @@
                             ?>
                             </div>
                             <div class="col-sm-1 text-end mt-1">
-                                <i class="bi bi-arrow-clockwise mt-2 refreshButton"></i>
+                                <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
+                                <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
                             </div>
                         </div>
                         <div>
@@ -111,6 +124,31 @@
             </div>
         </div>
     </main>
+
+
+    <div class="modal fade" id="addFolderModal" novalidate>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Create folder in this directory</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="api.php" method="post">
+                        <div class="form-group has-validation">
+                            <label for="newFolderName">Folder name:</label>
+                            <input type="text" class="form-control mt-2" id="newFolderName" name="newFolderName" placeholder="Folder name" required>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-primary mt-3">Create folder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <?php
         function generatePath() {
@@ -300,8 +338,16 @@
 
             return $folder;
         }
+
+        function generateMessages($type, $message) {
+            return '<div class="alert alert-'.$type.' alert-dismissible fade show" role="alert">
+                    '.$message.'
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>';
+        }
     ?>
-    
+    <!-- DELETE ALL PARAMS -->
+    <script>window.history.replaceState('', '', window.location.pathname);</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </body>
 </html>

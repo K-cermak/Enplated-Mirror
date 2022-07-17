@@ -16,12 +16,12 @@
     font-weight: 700;
 }
 
-.refreshButton {
+.refreshButton, .addFolderButton {
     font-size: 1.6em;
     transition: 0.3s;
 }
 
-.refreshButton:hover {
+.refreshButton:hover, .addFolderButton:hover {
     color: #fff;
     cursor: pointer;
 }
