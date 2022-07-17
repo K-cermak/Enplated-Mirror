@@ -30,6 +30,11 @@ function selectFolder() {
 function selectFile() {
     let folderDataFiles = document.querySelectorAll('.folderDataFile');
     folderDataFiles.forEach(function (folderDataFile) {
+        let ext = folderDataFile.querySelector(".card-body h6").innerHTML.split('.').pop();
+        if (ext == "jpg" || ext == "png" || ext == "jpeg" || ext == "svg") {
+            folderDataFile.querySelector(".card-body img").setAttribute("src", webUrl + folderDataFile.querySelector(".card-body h6").innerHTML);
+        }
+
         folderDataFile.addEventListener("click", event => {
             deselectAllClear();
             folderDataFile.style.backgroundColor = "#06428a";

@@ -198,6 +198,10 @@
                     $folder .= "image.svg";
                     break;
                 }
+                if ($extension == "svg") {
+                    $folder .= "svg.svg";
+                    break;
+                }
                 if ($extension == "mp3" || $extension == "wav" || $extension == "flac") {
                     $folder .= "audio.svg";
                     break;

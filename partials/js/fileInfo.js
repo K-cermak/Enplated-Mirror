@@ -10,8 +10,15 @@ function loadFile(fileName) {
     request.onload = function () {
         if (request.status >= 200 && request.status < 400) {
             let data = JSON.parse(request.responseText);
+            let img = "";
+
+            if (data.extension == "jpg" || data.extension == "png" || data.extension == "jpeg" || data.extension == "svg") {
+                img = `<div class="text-center"><img src="` + webUrl + fileName.querySelector("h6").innerText + `" class="img-fluid mt-2 mb-4" alt="` + data.name + `" style="max-width:100%;max-height:250px;"></div>`;
+            }
+
             document.querySelector('.selectedInfo div').innerHTML = `
             <h6><strong>Name:</strong> ` + data.name + `</h6>
+            `+ img +`
             <h6><strong>Path on server:</strong> ` + currentFolder + fileName.querySelector("h6").innerText + `</h6>
             <h6 class="mt-4"><strong>Web URL:</strong> ` + webUrl + fileName.querySelector("h6").innerText + ` </h6>
             
