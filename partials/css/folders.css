@@ -3,11 +3,25 @@
     border: none;
 }
 
-.folderDataFolder:hover {
+.folderDataFolder:hover, .folderDataFile:hover  {
     background-color: #3d3d3d;
     cursor: pointer;
 }
 
-.folderDataFile:hover {
-    background-color: #3d3d3d;
+.selectedInfo h6 {
+    font-weight: 400;
+}
+
+.selectedInfo h6 strong {
+    font-weight: 700;
+}
+
+.refreshButton {
+    font-size: 1.6em;
+    transition: 0.3s;
+}
+
+.refreshButton:hover {
+    color: #fff;
+    cursor: pointer;
 }

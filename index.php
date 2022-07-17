@@ -25,7 +25,14 @@
 
     //delete all params from url
     echo "<script>window.history.replaceState('', '', window.location.pathname);</script>";
-    //echo $_SESSION["current_folder"];
+    echo "<script>const currentFolder = '". $_SESSION["current_folder"] ."'; </script>";
+
+    $protocol = $_SERVER["REQUEST_SCHEME"];
+    $host = $_SERVER["HTTP_HOST"];
+    $serverFolder = str_replace(SERVER_ROOT, "", $_SESSION["current_folder"]);
+    $webUrl = $protocol . "://" . $host . "/" . $serverFolder;
+
+    echo "<script>const webUrl = '" . $webUrl . "'; </script>";
 ?>
 
 <!DOCTYPE html>
@@ -37,11 +44,13 @@
     <title>Enplated Mirror</title>
 
     <meta name="color-scheme" content="light dark">
-    <link rel="icon" type="image/png" href="https://mirror.k-cermak.com/data/enplated-syncer/png-favicon.png"/> <!-- !!!!!!!!!!!!!!!!!!!!!!! -->
+    <link rel="icon" type="image/png" href=" partials/images/png-favicon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-nightfall.min.css" rel="stylesheet" media="(prefers-color-scheme: dark)">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="partials/js/folderManager.js"></script>
+    <script src="partials/js/fileInfo.js"></script>
     <link rel="stylesheet" href="partials/css/folders.css">
 </head>
 <body>
@@ -67,16 +76,21 @@
             <div class="col-sm-9">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">
+                        <div class="row card-title">
+                            <div class="col-sm-11">
                             <?php
                                 echo generatePath();
                             ?>
-                        </h5>
+                            </div>
+                            <div class="col-sm-1 text-end mt-1">
+                                <i class="bi bi-arrow-clockwise mt-2 refreshButton"></i>
+                            </div>
+                        </div>
                         <div>
                             <div class="row">
                                 <?php
                                     echo getFolders();
-                                    echo generateFiles();
+                                    echo getFiles();
                                 ?>
                             </div>
                         </div>
@@ -85,7 +99,16 @@
             </div>
 
 
-            <div class="col-sm-3"></div>
+            <div class="col-sm-3 data">
+                <div class="card">
+                    <div class="card-body selectedInfo">
+                        <h4 class="card-title">Selected file info:</h4>
+                        <div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -97,7 +120,7 @@
             //split $_SESSION["current_folder"] into array
             $path_array = explode("/", $_SESSION["current_folder"]);
             $path_array_length = count($path_array);
-            $path_string = '<a href="?goBack=root"><button type="button" class="btn btn-secondary">My Drive</button></a> / ';
+            $path_string = '<a href="?goBack=root"><button type="button" class="btn btn-secondary">' . DISK_NAME . '</button></a> / ';
             for ($i = $count; $i < $path_array_length; $i++) {
                 if ($path_array[$i] != "") {
                     if ($i == $path_array_length - 2) {
@@ -142,7 +165,7 @@
         }
 
 
-        function generateFiles() {
+        function getFiles() {
             $files = array();
             $files = scandir($_SESSION["current_folder"]);
             $filesString = "";
