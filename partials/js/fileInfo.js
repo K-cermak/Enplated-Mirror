@@ -70,8 +70,8 @@ function loadFolder(folderName) {
             <button type="button" class="btn btn-dark mt-2 mx-1" onclick="openLink('` + webUrl + folderName.querySelector("h6").innerText + `')"><i class="bi bi-box-arrow-up-right"></i> Open</button>
 
             <div class="text-center mt-4 mb-5">
-                <button type="button" class="btn btn-warning mt-2 mx-1 downloadButton" onclick="renameFolder('` + folderName.querySelector("h6").innerText + `')"><i class="bi bi-pencil-square"></i> Rename Folder</button>
-                <button type="button" class="btn btn-danger mt-2 mx-1"><i class="bi bi-trash"></i> Delete Folder</button>
+                <button type="button" class="btn btn-warning mt-2 mx-1" onclick="renameFolder('` + folderName.querySelector("h6").innerText + `')"><i class="bi bi-pencil-square"></i> Rename Folder</button>
+                <button type="button" class="btn btn-danger mt-2 mx-1" onclick="deleteFolder('` + folderName.querySelector("h6").innerText + `')"><i class="bi bi-trash"></i> Delete Folder</button>
             </div>
         </div>
             `;
@@ -154,4 +154,12 @@ function renameFolder(currentName) {
     document.querySelectorAll("#renameFolder input")[0].value = currentName;
     document.querySelectorAll("#renameFolder input")[1].value = currentName;
     
+}
+
+function deleteFolder(name) {
+    let myModal = new bootstrap.Modal(document.querySelector('#deleteFolder'));
+    myModal.show();
+
+    document.querySelector("#deleteFolder .modal-body p strong").innerHTML = name;
+    document.querySelectorAll("#deleteFolder input")[0].value = name;
 }

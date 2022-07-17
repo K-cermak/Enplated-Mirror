@@ -122,6 +122,17 @@
         }
     }
 
+    if ($_POST && isset($_POST["deleteFolderName"])) {
+        $folderName = $_POST["deleteFolderName"];
+        echo $_SESSION["current_folder"] . $folderName;
+
+        deleteDataFolder($_SESSION["current_folder"] . $folderName);
+
+        header("Location: index.php?folderDelete=error");
+        die();
+
+    }
+
     function validateFolderName($folderName) {
         if (strpos($folderName, "..") !== false) {
             return false;
@@ -170,5 +181,21 @@
             }
         }
         return $size;
+    }
+
+    function deleteDataFolder($folderLocation) {
+        $dir = opendir($folderLocation);
+        while(($file = readdir($dir)) !== false) {
+            if ($file != "." && $file != "..") {
+                if (is_file($folderLocation . "/" . $file)) {
+                    unlink($folderLocation . "/" . $file);
+                } else if (is_dir($folderLocation . "/" . $file)) {
+                    deleteDataFolder($folderLocation . "/" . $file);
+                }
+            }
+        }
+        rmdir($folderLocation);
+        header("Location: index.php?folderDelete=ok");
+        die();
     }
 ?>

@@ -76,7 +76,7 @@
                             echo generateMessages("success", "Folder created successfully.");
                         }
                         if ($_GET["folderCreate"] == "error") {
-                            echo generateMessages("warning", "Unknown error creating folder.");
+                            echo generateMessages("warning", "Unknown error when creating folder.");
                         }
                         if ($_GET["folderCreate"] == "exist") {
                             echo generateMessages("warning", "Error: Folder already exists.");
@@ -91,13 +91,22 @@
                             echo generateMessages("success", "Folder renamed successfully.");
                         }
                         if ($_GET["folderRename"] == "error") {
-                            echo generateMessages("warning", "Unknown error renaming folder.");
+                            echo generateMessages("warning", "Unknown error when renaming folder.");
                         }
                         if ($_GET["folderRename"] == "exist") {
                             echo generateMessages("warning", "Error: Folder already exists.");
                         }
                         if ($_GET["folderRename"] == "prohibitedChars") {
                             echo generateMessages("warning", "Error: Prohibited characters in folder name or probibited name.");
+                        }
+                    }
+
+                    if (isset($_GET["folderDelete"])) {
+                        if ($_GET["folderDelete"] == "ok") {
+                            echo generateMessages("success", "Folder deleted successfully.");
+                        }
+                        if ($_GET["folderDelete"] == "error") {
+                            echo generateMessages("warning", "Unknown error when deleting folder.");
                         }
                     }
                 ?>
@@ -182,6 +191,28 @@
                         </div>
                         <div class="text-end mt-3">
                             <button type="submit" class="btn btn-primary mt-3">Rename Folder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteFolder" novalidate>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Delete Folder</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Do you really want to delete folder <strong></strong>?</p>
+
+                    <form action="api.php" method="post">
+                        <input type="hidden" class="form-control mt-2" id="deleteFolderName" name="deleteFolderName" placeholder="Folder name" required>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-danger mt-3">Delete Folder</button>
                         </div>
                     </form>
                 </div>
