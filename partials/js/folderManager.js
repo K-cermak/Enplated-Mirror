@@ -91,7 +91,7 @@ function setRefreshButton() {
 
 function setAddFolderButton() {
     document.querySelector('.addFolderButton').addEventListener('click', function () {
-        var myModal = new bootstrap.Modal(document.getElementById('addFolderModal'))
-        myModal.show()
+        let myModal = new bootstrap.Modal(document.querySelector('#addFolderModal'));
+        myModal.show();
     });
 }

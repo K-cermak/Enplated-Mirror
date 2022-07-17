@@ -73,34 +73,49 @@
                 <?php
                     if (isset($_GET["folderCreate"])) {
                         if ($_GET["folderCreate"] == "ok") {
-                            echo generateMessages("success", "Folder created successfully");
+                            echo generateMessages("success", "Folder created successfully.");
                         }
                         if ($_GET["folderCreate"] == "error") {
-                            echo generateMessages("warning", "Error creating folder");
+                            echo generateMessages("warning", "Unknown error creating folder.");
                         }
                         if ($_GET["folderCreate"] == "exist") {
-                            echo generateMessages("warning", "Folder already exists");
+                            echo generateMessages("warning", "Error: Folder already exists.");
                         }
                         if ($_GET["folderCreate"] == "prohibitedChars") {
-                            echo generateMessages("warning", "Prohibited characters in folder name");
+                            echo generateMessages("warning", "Error: Prohibited characters in folder name or probibited name.");
+                        }
+                    }
+
+                    if (isset($_GET["folderRename"])) {
+                        if ($_GET["folderRename"] == "ok") {
+                            echo generateMessages("success", "Folder renamed successfully.");
+                        }
+                        if ($_GET["folderRename"] == "error") {
+                            echo generateMessages("warning", "Unknown error renaming folder.");
+                        }
+                        if ($_GET["folderRename"] == "exist") {
+                            echo generateMessages("warning", "Error: Folder already exists.");
+                        }
+                        if ($_GET["folderRename"] == "prohibitedChars") {
+                            echo generateMessages("warning", "Error: Prohibited characters in folder name or probibited name.");
                         }
                     }
                 ?>
                 <div class="card">
                     <div class="card-body">
                         <div class="row card-title">
-                            <div class="col-sm-11">
+                            <div class="col-sm-9">
                             <?php
                                 echo generatePath();
                             ?>
                             </div>
-                            <div class="col-sm-1 text-end mt-1">
+                            <div class="col-sm-3 text-end mt-1">
                                 <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
                                 <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
                             </div>
                         </div>
                         <div>
-                            <div class="row">
+                            <div class="row mt-3">
                                 <?php
                                     echo getFolders();
                                     echo getFiles();
@@ -130,18 +145,43 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Create folder in this directory</h4>
+                    <h4 class="modal-title">Create Folder in this directory</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
                     <form action="api.php" method="post">
-                        <div class="form-group has-validation">
+                        <div class="form-group">
                             <label for="newFolderName">Folder name:</label>
                             <input type="text" class="form-control mt-2" id="newFolderName" name="newFolderName" placeholder="Folder name" required>
                         </div>
                         <div class="text-end mt-3">
-                            <button type="submit" class="btn btn-primary mt-3">Create folder</button>
+                            <button type="submit" class="btn btn-primary mt-3">Create Folder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="renameFolder" novalidate>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Rename Folder</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="api.php" method="post">
+                        <input type="hidden" class="form-control mt-2" id="renameOldName" name="renameOldName" placeholder="Folder name" required>
+
+                        <div class="form-group">
+                            <label for="renameNewName">New Folder name:</label>
+                            <input type="text" class="form-control mt-2" id="renameNewName" name="renameNewName" placeholder="Folder name" required>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-primary mt-3">Rename Folder</button>
                         </div>
                     </form>
                 </div>

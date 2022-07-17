@@ -86,13 +86,40 @@
             }
 
             //create folder
-            mkdir($_SESSION["current_folder"] . $newFolderName);
-            header("Location: index.php?folderCreate=ok");
-            die();
+            if (mkdir($_SESSION["current_folder"] . $newFolderName)) {
+                header("Location: index.php?folderCreate=ok");
+                die();
+            } else {
+                header("Location: index.php?folderCreate=error");
+                die();
+            }
         
         }
         header("Location: index.php?folderCreate=error");
         die();
+    }
+
+    if ($_POST && isset($_POST["renameOldName"]) && $_POST["renameNewName"]) {
+        $oldName = $_POST["renameOldName"];
+        $newName = $_POST["renameNewName"];
+
+        if (validateFolderName($newName) == false) {
+            header("Location: index.php?folderRename=prohibitedChars");
+            die();
+        }
+
+        if (file_exists($_SESSION["current_folder"] . $newName)) {
+            header("Location: index.php?folderRename=exist");
+            die();
+        }
+
+        if (rename($_SESSION["current_folder"] . $oldName, $_SESSION["current_folder"] . $newName)) {
+            header("Location: index.php?folderRename=ok");
+            die();
+        } else {
+            header("Location: index.php?folderRename=error");
+            die();
+        }
     }
 
     function validateFolderName($folderName) {
@@ -100,6 +127,12 @@
             return false;
         }
         if (strpos($folderName, ".") !== false) {
+            return false;
+        }
+        if ($folderName == "") {
+            return false;
+        }
+        if (preg_match('/^\s*$/', $folderName)) {
             return false;
         }
         //if contain / or \ or : or * or ? or " or < or > or |

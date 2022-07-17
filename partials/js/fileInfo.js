@@ -68,6 +68,11 @@ function loadFolder(folderName) {
             <div class="text-center mt-4 mb-5">
             <button type="button" class="btn btn-secondary mt-2 mx-1" onclick="copyLink('` + webUrl + folderName.querySelector("h6").innerText + `', this)"><i class="bi bi-link-45deg"></i> Copy Link</button>
             <button type="button" class="btn btn-dark mt-2 mx-1" onclick="openLink('` + webUrl + folderName.querySelector("h6").innerText + `')"><i class="bi bi-box-arrow-up-right"></i> Open</button>
+
+            <div class="text-center mt-4 mb-5">
+                <button type="button" class="btn btn-warning mt-2 mx-1 downloadButton" onclick="renameFolder('` + folderName.querySelector("h6").innerText + `')"><i class="bi bi-pencil-square"></i> Rename Folder</button>
+                <button type="button" class="btn btn-danger mt-2 mx-1"><i class="bi bi-trash"></i> Delete Folder</button>
+            </div>
         </div>
             `;
 
@@ -140,4 +145,13 @@ function downloadFile(urlDownload, event) {
             event.innerHTML = '<i class="bi bi-download"></i> Download File';
         }
     });
+}
+
+function renameFolder(currentName) {
+    let myModal = new bootstrap.Modal(document.querySelector('#renameFolder'));
+    myModal.show();
+
+    document.querySelectorAll("#renameFolder input")[0].value = currentName;
+    document.querySelectorAll("#renameFolder input")[1].value = currentName;
+    
 }
