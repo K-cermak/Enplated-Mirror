@@ -49,16 +49,7 @@
     <script src="partials/js/fileInfo.js"></script>
     <link rel="stylesheet" href="partials/css/folders.css">
 </head>
-<body>
-    <style>
-        .row {
-            margin: 0;
-        }
-        header {
-            padding: 10px 0px 30px 0px;
-        }
-    </style>
-
+<body class="d-flex flex-column min-vh-100">
     <header>
         <div class="row">
             <div class="col-md-12">
@@ -263,6 +254,17 @@
         </div>
     </div>
 
+    <footer class="bg-dark text-lg-start mt-auto pt-2 pb-3">
+        <div class="row">
+            <div class="col text-start pt-3 customMessage">
+                <h4><?php echo FOOTER_MESSAGE; ?></h4>
+            </div>
+            <div class="col text-end">
+                <h4>This site is powered by <a href="https://github.com/K-cermak/Enplated-Mirror" target="_blank">Enplated Mirror</a> v1.0.</h4>
+                <h4>Developed by <a href="https://k-cermak.com" target="_blank">Karlosoft Group</a>.</h4>
+            </div>
+        </div>
+    </footer>
 
     <?php
         function generatePath() {

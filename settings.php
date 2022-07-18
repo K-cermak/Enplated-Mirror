@@ -5,4 +5,5 @@
     define("DISK_NAME", "My Drive");
     define("APP_NAME", "Enplated Mirror");
     define("FAVICON_LOCATION", "partials/images/favicon.png");
+    define("FOOTER_MESSAGE", "License granted to Karlosoft Group.");
 ?>
