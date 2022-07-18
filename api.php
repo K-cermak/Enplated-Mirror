@@ -167,6 +167,54 @@
             die();
         }
     }
+   
+    if ($_FILES) {
+        $success = 0;
+        $error = 0;
+        $exist = 0;
+        $prohibitedChars = 0;
+
+        for ($i = 0; $i < count($_FILES["uploadFile"]["name"]); $i++) {
+            $fileName = $_FILES["uploadFile"]["name"][$i];
+            $fileTmpName = $_FILES["uploadFile"]["tmp_name"][$i];
+            $fileError = $_FILES["uploadFile"]["error"][$i];
+            $filePath = $_SESSION["current_folder"] . $fileName;
+
+            if ($fileError == 0) {
+                if (validateName($fileName, false) == false) {
+                    $prohibitedChars++;
+                }
+                if (file_exists($filePath)) {
+                    if (isset($_POST["uploadFileOverwrite"])) {
+                        if (unlink($filePath) && move_uploaded_file($fileTmpName, $filePath)) {
+                            $success++;
+                            continue;
+                        } else {
+                            $error++;
+                            continue;
+                        }
+                    } else {
+                        $exist++;
+                        continue;
+                    }
+                }
+                
+                if (move_uploaded_file($fileTmpName, $filePath)) {
+                    $success++;
+                    continue;
+                } else {
+                    $error++;
+                    continue;
+                }
+            } else {
+                $error++;
+                continue;
+            }
+        }
+
+        header("Location: index.php?fileUpload=completed&success=" . $success . "&error=" . $error . "&exist=" . $exist . "&prohibitedChars=" . $prohibitedChars);
+        die();
+    }
 
 
     //***********************************************************

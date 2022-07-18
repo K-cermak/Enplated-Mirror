@@ -45,7 +45,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-nightfall.min.css" rel="stylesheet" media="(prefers-color-scheme: dark)">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="partials/js/folderManager.js"></script>
+    <script src="partials/js/setup.js"></script>
     <script src="partials/js/fileInfo.js"></script>
     <link rel="stylesheet" href="partials/css/folders.css">
 </head>
@@ -82,6 +82,7 @@
                             ?>
                             </div>
                             <div class="col-sm-3 text-end mt-1">
+                                <i class="bi bi-upload mt-2 mx-2 uploadButton"></i>
                                 <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
                                 <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
                             </div>
@@ -113,7 +114,7 @@
     </main>
 
 
-    <div class="modal fade" id="addFolderModal" novalidate>
+    <div class="modal fade" id="addFolderModal">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -136,7 +137,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="renameFolder" novalidate>
+    <div class="modal fade" id="renameFolder">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -146,7 +147,7 @@
 
                 <div class="modal-body">
                     <form action="api.php" method="post">
-                        <input type="hidden" class="form-control mt-2" id="renameOldName" name="renameOldName" placeholder="Folder name" required>
+                        <input type="hidden" class="form-control" id="renameOldName" name="renameOldName" placeholder="Folder name" required>
 
                         <div class="form-group">
                             <label for="renameNewFolderName">New Folder name:</label>
@@ -161,7 +162,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="deleteFolder" novalidate>
+    <div class="modal fade" id="deleteFolder">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -173,7 +174,7 @@
                     <p>Do you really want to delete folder <strong></strong>?</p>
 
                     <form action="api.php" method="post">
-                        <input type="hidden" class="form-control mt-2" id="deleteFolderName" name="deleteFolderName" placeholder="Folder name" required>
+                        <input type="hidden" class="form-control" id="deleteFolderName" name="deleteFolderName" placeholder="Folder name" required>
                         <div class="text-end mt-3">
                             <button type="submit" class="btn btn-danger mt-3">Delete Folder</button>
                         </div>
@@ -184,7 +185,7 @@
     </div>
 
 
-    <div class="modal fade" id="renameFile" novalidate>
+    <div class="modal fade" id="renameFile">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -194,7 +195,7 @@
 
                 <div class="modal-body">
                     <form action="api.php" method="post">
-                        <input type="hidden" class="form-control mt-2" id="renameOldName" name="renameOldName" placeholder="File name" required>
+                        <input type="hidden" class="form-control" id="renameOldName" name="renameOldName" placeholder="File name" required>
 
                         <div class="form-group">
                             <label for="renameNewFileName">New File name:</label>
@@ -209,7 +210,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="deleteFile" novalidate>
+    <div class="modal fade" id="deleteFile">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -221,7 +222,7 @@
                     <p>Do you really want to delete file <strong></strong>?</p>
 
                     <form action="api.php" method="post">
-                        <input type="hidden" class="form-control mt-2" id="deleteFileName" name="deleteFileName" placeholder="File name" required>
+                        <input type="hidden" class="form-control" id="deleteFileName" name="deleteFileName" placeholder="File name" required>
                         <div class="text-end mt-3">
                             <button type="submit" class="btn btn-danger mt-3">Delete File</button>
                         </div>
@@ -231,6 +232,36 @@
         </div>
     </div>
 
+
+    <div class="modal fade" id="uploadFile">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Upload File</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="api.php" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="uploadFile">Select file(s) to upload (max: <?php echo ini_get('upload_max_filesize') ?>B):</label>
+                            <input type="file" class="form-control mt-2" id="uploadFile" name="uploadFile[]" multiple="multiple" required>
+                        </div>
+
+                        <div class="form-check mt-3">
+                            <label class="form-check-label" for="uploadFileOverwrite">Overwrite file(s) if exists</label>
+                            <input class="form-check-input" type="checkbox" id="uploadFileOverwrite" name="uploadFileOverwrite">
+                        </div>
+                        
+                        
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-primary mt-3">Upload File(s)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <?php
@@ -284,7 +315,6 @@
             }
             return $foldersString;
         }
-
 
         function getFiles() {
             $files = array();
@@ -486,10 +516,39 @@
                     $message .= generateMessages("warning", "Unknown error when deleting file.");
                 }
             }
+
+            if (isset($_GET["fileUpload"])) {
+                $success = $_GET["success"];
+                $error = $_GET["error"];
+                $exist = $_GET["exist"];
+                $prohibitedChars = $_GET["prohibitedChars"];
+
+                if ($error == 0 && $exist == 0 && $prohibitedChars == 0) {
+                    if ($success == 1) {
+                        $message .= generateMessages("success", "1 File uploaded successfully.");
+                    } else {
+                        $message .= generateMessages("success", $success . " Files uploaded successfully.");
+                    }
+                } else {
+                    $subMessage = "Error when uploading files. Number of successfully uploaded files: " . $success . " / ". $success + $error + $exist + $prohibitedChars .".<br><strong>Reason:</strong><br>";
+
+                    if ($error > 0) {
+                        $subMessage .= $error . " file(s) failed to upload.<br>";
+                    }
+                    if ($exist > 0) {
+                        $subMessage .= $exist . " file(s) already exist.<br>";
+                    }
+                    if ($prohibitedChars > 0) {
+                        $subMessage .= $prohibitedChars . " file(s) contain prohibited characters.<br>";
+                    }
+
+                    $message .= generateMessages("warning", $subMessage);
+                }
+            }
+
             return $message;
         }
 
-        
         function generateMessages($type, $message) {
             return '<div class="alert alert-'.$type.' alert-dismissible fade show" role="alert">
                     '.$message.'
@@ -497,7 +556,8 @@
                 </div>';
         }
     ?>
-    <!-- DELETE ALL PARAMS -->
+
+    <!-- DELETE ALL PARAMS-->
     <script>window.history.replaceState('', '', window.location.pathname);</script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </body>

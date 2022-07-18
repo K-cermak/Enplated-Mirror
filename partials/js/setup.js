@@ -5,6 +5,7 @@ window.addEventListener('load', function () {
     noFileSelected();
     setRefreshButton();
     setAddFolderButton();
+    setUploadFileButton();
 });
 
 function selectBody() {
@@ -92,6 +93,13 @@ function setRefreshButton() {
 function setAddFolderButton() {
     document.querySelector('.addFolderButton').addEventListener('click', function () {
         let myModal = new bootstrap.Modal(document.querySelector('#addFolderModal'));
+        myModal.show();
+    });
+}
+
+function setUploadFileButton() {
+    document.querySelector('.uploadButton').addEventListener('click', function () {
+        let myModal = new bootstrap.Modal(document.querySelector('#uploadFile'));
         myModal.show();
     });
 }

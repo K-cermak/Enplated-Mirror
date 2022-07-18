@@ -16,12 +16,12 @@
     font-weight: 700;
 }
 
-.refreshButton, .addFolderButton {
+.refreshButton, .addFolderButton, .uploadButton {
     font-size: 1.6em;
     transition: 0.3s;
 }
 
-.refreshButton:hover, .addFolderButton:hover {
+.refreshButton:hover, .addFolderButton:hover, .uploadButton:hover {
     color: #fff;
     cursor: pointer;
 }
