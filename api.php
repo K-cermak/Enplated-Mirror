@@ -139,7 +139,6 @@
 
     if ($_POST && isset($_POST["deleteFolderName"])) {
         $folderName = $_POST["deleteFolderName"];
-        echo $_SESSION["current_folder"] . $folderName;
 
         deleteDataFolder($_SESSION["current_folder"] . $folderName);
 
@@ -173,7 +172,6 @@
 
     if ($_POST && isset($_POST["deleteFileName"])) {
         $fileName = $_POST["deleteFileName"];
-        echo $_SESSION["current_folder"] . $fileName;
 
         if (unlink($_SESSION["current_folder"] . $fileName)) {
             header("Location: index.php?fileDelete=ok");
@@ -319,7 +317,6 @@
         rmdir($folderLocation);
 
         if ($dieAfterDelete == true) {
-            echo "stop";
             header("Location: index.php?folderDelete=ok");
             die();
         }
