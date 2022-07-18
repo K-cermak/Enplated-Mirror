@@ -41,7 +41,7 @@
 
 <br/>
 
-### Fow what OS is Enplated Mirror built for?
+### For what OS is Enplated Mirror built for?
 - Enplated Mirror is independent of OS version, it only needs PHP installed.
 
 <br/>
