@@ -22,7 +22,7 @@
 ### What exactly is Enplated Mirror?
 - Enplated Mirror is a simple PHP file manager that can manage data that is shared with users - photo galleries, downloadable files, etc..
 
-<img src="https://mirror.k-cermak.com/data/enplated-mirror/screenshot-1.png" alt="Enplated Mirror logo">
+<img src="https://mirror.k-cermak.com/data/enplated-mirror/screenshot-1.png" alt="Enplated Mirror screenshot">
 
 <br/>
 
