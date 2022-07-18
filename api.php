@@ -80,6 +80,7 @@
         if ($_POST["newFolderName"] != "") {
             $newFolderName = $_POST["newFolderName"];
 
+            $newFolderName = cleanName($newFolderName);
             if (validateName($newFolderName) == false) {
                 header("Location: index.php?folderCreate=prohibitedChars");
                 die();
@@ -109,6 +110,7 @@
         $oldName = $_POST["renameOldName"];
         $newName = $_POST["renameNewFolderName"];
 
+        $newName = cleanName($newName);
         if (validateName($newName) == false) {
             header("Location: index.php?folderRename=prohibitedChars");
             die();
@@ -119,13 +121,20 @@
             die();
         }
 
-        if (rename($_SESSION["current_folder"] . $oldName, $_SESSION["current_folder"] . $newName)) {
-            header("Location: index.php?folderRename=ok");
-            die();
+        if (recurse_copy($_SESSION["current_folder"] . $oldName, $_SESSION["current_folder"] . $newName)) {
+            if (deleteDataFolder($_SESSION["current_folder"] . $oldName, false)) {
+                header("Location: index.php?folderRename=ok");
+                die();
+            } else {
+                header("Location: index.php?folderRename=error");
+                die();
+            }
         } else {
             header("Location: index.php?folderRename=error");
             die();
         }
+
+
     }
 
     if ($_POST && isset($_POST["deleteFolderName"])) {
@@ -142,6 +151,7 @@
         $oldName = $_POST["renameOldName"];
         $newName = $_POST["renameNewFileName"];
 
+        $newName = cleanName($newName);
         if (validateName($newName, false) == false) {
             header("Location: index.php?fileRename=prohibitedChars");
             die();
@@ -187,6 +197,7 @@
             $filePath = $_SESSION["current_folder"] . $fileName;
 
             if ($fileError == 0) {
+                $fileName = cleanName($fileName);
                 if (validateName($fileName, false) == false) {
                     $prohibitedChars++;
                 }
@@ -258,6 +269,12 @@
         return true;
     }
 
+    function cleanName($name) {
+        //delete spaces at the beginning and at the end of the name
+        $name = trim($name);
+        return $name;
+    }
+
     function calcNumberOfFiles($folderName) {
         $files = 0;
         $dir = opendir($folderName);
@@ -288,19 +305,41 @@
         return $size;
     }
 
-    function deleteDataFolder($folderLocation) {
+    function deleteDataFolder($folderLocation, $dieAfterDelete = true) {
         $dir = opendir($folderLocation);
         while(($file = readdir($dir)) !== false) {
             if ($file != "." && $file != "..") {
                 if (is_file($folderLocation . "/" . $file)) {
                     unlink($folderLocation . "/" . $file);
                 } else if (is_dir($folderLocation . "/" . $file)) {
-                    deleteDataFolder($folderLocation . "/" . $file);
+                    deleteDataFolder($folderLocation . "/" . $file, false);
                 }
             }
         }
         rmdir($folderLocation);
-        header("Location: index.php?folderDelete=ok");
-        die();
+
+        if ($dieAfterDelete == true) {
+            echo "stop";
+            header("Location: index.php?folderDelete=ok");
+            die();
+        }
+        return true;
+    }
+
+    function recurse_copy($src, $dst) { 
+        $dir = opendir($src); 
+        @mkdir($dst); 
+        while(false !== ( $file = readdir($dir)) ) { 
+            if (( $file != '.' ) && ( $file != '..' )) { 
+                if ( is_dir($src . '/' . $file) ) { 
+                    recurse_copy($src . '/' . $file,$dst . '/' . $file); 
+                } 
+                else { 
+                    copy($src . '/' . $file,$dst . '/' . $file); 
+                } 
+            } 
+        } 
+        closedir($dir); 
+        return true;
     }
 ?>
