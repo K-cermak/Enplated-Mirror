@@ -56,7 +56,7 @@
     <link rel="stylesheet" href="partials/css/folders.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <header>
+    <header class="mt-3 mb-3">
         <div class="row">
             <div class="col-md-6">
                 <h1><?php echo APP_NAME; ?></h1>
@@ -67,7 +67,7 @@
         </div>
     </header>
 
-    <main>
+    <main class="mb-4">
         <div class="row">
             <div class="col-sm-9">
                 <?php
@@ -87,7 +87,7 @@
                                 echo generatePath();
                             ?>
                             </div>
-                            <div class="col-sm-3 text-end mt-1">
+                            <div class="col-sm-3 text-end mt-1 toolbar">
                                 <i class="bi bi-upload mt-2 mx-2 uploadButton"></i>
                                 <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
                                 <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>

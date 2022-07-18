@@ -20,6 +20,7 @@ function selectFolder() {
         folderDataFolder.addEventListener("click", event => {
             deselectAllClear();
             folderDataFolder.style.backgroundColor = "#06428a";
+            folderDataFolder.classList.add('selectedFolder');
             loadFolder(folderDataFolder);
         });
 
@@ -58,6 +59,7 @@ function deselectAll(event) {
         && event.target.closest('.selectedInfo') == null
         && event.target.classList.contains('download-file') == false
     ) {
+        document.querySelector(".selectedFolder").classList.remove('selectedFolder');
         noFileSelected();
         let folderDataFolders = document.querySelectorAll('.folderDataFolder');
         folderDataFolders.forEach(function (folderDataFolder) {
@@ -73,6 +75,9 @@ function deselectAll(event) {
 }
 
 function deselectAllClear() {
+    if (document.querySelector(".selectedFolder")) {
+        document.querySelector(".selectedFolder").classList.remove('selectedFolder');
+    }
     let folderDataFolders = document.querySelectorAll('.folderDataFolder');
     folderDataFolders.forEach(function (folderDataFolder) {
         folderDataFolder.style.backgroundColor = "";

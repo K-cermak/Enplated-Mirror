@@ -1,10 +1,29 @@
+/*BASIC*/
 .row {
     margin: 0;
 }
-header {
-    padding: 10px 0px 30px 0px;
+.mobileOpen {
+    display: none;
 }
 
+/*HEADER*/
+@media (max-width: 768px) {
+    header .row .col-md-6:first-child {
+        width: 70%;
+    }
+    header .row .col-md-6:last-child {
+        width: 30%;
+    }
+    .toolbar {
+        margin-top: 20px !important;
+        text-align: left !important;
+    }
+    .mobileOpen {
+        display: inline-block;
+    }
+}
+
+/*FILE MANAGER LAYOUT*/
 .folderDataFolder, .folderDataFile {
     transition: 0.3s;
     border: none;
@@ -15,14 +34,7 @@ header {
     cursor: pointer;
 }
 
-.selectedInfo h6 {
-    font-weight: 400;
-}
-
-.selectedInfo h6 strong {
-    font-weight: 700;
-}
-
+/*BUTTONS IN MANAGER*/
 .refreshButton, .addFolderButton, .uploadButton {
     font-size: 1.6em;
     transition: 0.3s;
@@ -33,14 +45,37 @@ header {
     cursor: pointer;
 }
 
+
+/*SELECTED FILE INFO*/
+.selectedInfo h6 {
+    font-weight: 400;
+}
+
+.selectedInfo h6 strong {
+    font-weight: 700;
+}
+
+
+/*LINKS IN FOOTER*/
 footer h4 {
     margin: 0;
     font-weight: 400;
     font-size: 1em;
 }
 
+@media (max-width: 768px) {
+    footer .row {
+        flex-direction: column;
+    }
+    footer .row > div {
+        margin-bottom: 10px;
+    }
+    footer h4 {
+        font-size: 0.8em;
+        text-align: center;
+    }
+}
 
-/*LINKS IN FOOTER*/
 footer h4 a {
 	color: #ffffff !important;
 	display: inline-block;

@@ -71,7 +71,8 @@ function loadFolder(folderName) {
             
             <div class="text-center mt-4 mb-5">
                 <button type="button" class="btn btn-secondary mt-2 mx-1" onclick="copyLink('` + webUrl + folderName.querySelector("h6").innerText + `', this)"><i class="bi bi-link-45deg"></i> Copy Link</button>
-                <button type="button" class="btn btn-dark mt-2 mx-1" onclick="openLink('` + webUrl + folderName.querySelector("h6").innerText + `')"><i class="bi bi-box-arrow-up-right"></i> Open</button>
+                <button type="button" class="btn btn-primary mt-2 mx-1 mobileOpen" onclick="openEnplated()"><i class="bi bi-folder2-open"></i> Open Folder</button>
+                <button type="button" class="btn btn-dark mt-2 mx-1" onclick="openLink('` + webUrl + folderName.querySelector("h6").innerText + `')"><i class="bi bi-box-arrow-up-right"></i> Open in new tab</button>
             </div>
 
             <div class="text-center mt-4 mb-5">
@@ -181,4 +182,8 @@ function deleteFile(name) {
 
     document.querySelector("#deleteFile .modal-body p strong").innerHTML = name;
     document.querySelectorAll("#deleteFile input")[0].value = name;
+}
+
+function openEnplated() {
+    document.querySelector(".selectedFolder button").click();
 }

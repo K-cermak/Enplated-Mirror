@@ -41,7 +41,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo APP_NAME; ?></title>
+    <title>Login - <?php echo APP_NAME; ?></title>
 
     <meta name="color-scheme" content="light dark">
     <meta name="robots" content="noindex" />
@@ -55,27 +55,24 @@
     <link rel="stylesheet" href="partials/css/folders.css">
 </head>
     <body class="d-flex flex-column min-vh-100">
-        <div class="container mt-5">
-            <?php
-                if (isset($_GET["error"])) {
-                    if ($_GET["error"] == "wrongCode") {
-                        echo generateMessages("danger", "Wrong Access Code.");
-                    }
+        <?php
+            if (isset($_GET["error"])) {
+                if ($_GET["error"] == "wrongCode") {
+                    echo generateMessages("danger", "Wrong Access Code.");
                 }
-                if (isset($_GET["logout"])) {
-                    if ($_GET["logout"] == "completed") {
-                        echo generateMessages("success", "Logout succesfull.");
-                    }
-                }      
-                if (isset($_GET["logout"])) {
-                    if ($_GET["logout"] == "accessChanged") {
-                        echo generateMessages("warning", "Access Code changed. Please login again.");
-                    }
+            }
+            if (isset($_GET["logout"])) {
+                if ($_GET["logout"] == "completed") {
+                    echo generateMessages("success", "Logout succesfull.");
                 }
-            ?>
-        </div>
-
-
+            }      
+            if (isset($_GET["logout"])) {
+                if ($_GET["logout"] == "accessChanged") {
+                    echo generateMessages("warning", "Access Code changed. Please login again.");
+                }
+            }
+        ?>
+        
         <div class="container">
             <div class="row">
                 <div class="col-md-6 offset-md-3 mt-5">
@@ -106,10 +103,10 @@
 
         <?php
             function generateMessages($type, $message) {
-                return '<div class="alert alert-'.$type.' alert-dismissible fade show" role="alert">
+                return '<div class="container mt-5"><div class="alert alert-'.$type.' alert-dismissible fade show" role="alert">
                         '.$message.'
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>';
+                    </div></div>';
             }
         ?>
 
