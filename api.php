@@ -74,7 +74,7 @@
         if ($_POST["newFolderName"] != "") {
             $newFolderName = $_POST["newFolderName"];
 
-            if (validateFolderName($newFolderName) == false) {
+            if (validateName($newFolderName) == false) {
                 header("Location: index.php?folderCreate=prohibitedChars");
                 die();
             }
@@ -99,11 +99,11 @@
         die();
     }
 
-    if ($_POST && isset($_POST["renameOldName"]) && $_POST["renameNewName"]) {
+    if ($_POST && isset($_POST["renameOldName"]) && $_POST["renameNewFolderName"]) {
         $oldName = $_POST["renameOldName"];
-        $newName = $_POST["renameNewName"];
+        $newName = $_POST["renameNewFolderName"];
 
-        if (validateFolderName($newName) == false) {
+        if (validateName($newName) == false) {
             header("Location: index.php?folderRename=prohibitedChars");
             die();
         }
@@ -130,24 +130,58 @@
 
         header("Location: index.php?folderDelete=error");
         die();
-
     }
 
-    function validateFolderName($folderName) {
-        if (strpos($folderName, "..") !== false) {
+    if ($_POST && isset($_POST["renameOldName"]) && $_POST["renameNewFileName"]) {
+        $oldName = $_POST["renameOldName"];
+        $newName = $_POST["renameNewFileName"];
+
+        if (validateName($newName, false) == false) {
+            header("Location: index.php?fileRename=prohibitedChars");
+            die();
+        }
+
+        if (file_exists($_SESSION["current_folder"] . $newName)) {
+            header("Location: index.php?fileRename=exist");
+            die();
+        }
+
+        if (rename($_SESSION["current_folder"] . $oldName, $_SESSION["current_folder"] . $newName)) {
+            header("Location: index.php?fileRename=ok");
+            die();
+        } else {
+            header("Location: index.php?fileRename=error");
+            die();
+        }
+    }
+
+
+    //***********************************************************
+    //                    FUNCTIONS
+    //***********************************************************
+    function validateName($newName, $isFolder = true) {
+        if (strpos($newName, "..") !== false) {
             return false;
         }
-        if (strpos($folderName, ".") !== false) {
+
+        if ($isFolder == true) {
+            if (strpos($newName, ".") !== false) {
+                return false;
+            }
+        } else {
+            if ($newName == ".") {
+                return false;
+            }
+        }
+
+        if ($newName == "") {
             return false;
         }
-        if ($folderName == "") {
-            return false;
-        }
-        if (preg_match('/^\s*$/', $folderName)) {
+        if (preg_match('/^\s*$/', $newName)) {
             return false;
         }
         //if contain / or \ or : or * or ? or " or < or > or |
-        if (strpos($folderName, "/") !== false || strpos($folderName, "\\") !== false || strpos($folderName, ":") !== false || strpos($folderName, "*") !== false || strpos($folderName, "?") !== false || strpos($folderName, "\"") !== false || strpos($folderName, "<") !== false || strpos($folderName, ">") !== false || strpos($folderName, "|") !== false) {
+        if (strpos($newName, "/") !== false || strpos($newName, "\\") !== false || strpos($newName, ":") !== false || strpos($newName, "*") !== false || strpos($newName, "?") !== false || strpos($newName, "\"") !== false || strpos($newName, "<") !== false || strpos($newName, ">") !== false || strpos($newName, "|") !== false) {
             return false;
         }
         return true;

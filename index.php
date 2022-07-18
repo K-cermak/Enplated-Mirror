@@ -109,6 +109,21 @@
                             echo generateMessages("warning", "Unknown error when deleting folder.");
                         }
                     }
+
+                    if (isset($_GET["fileRename"])) {
+                        if ($_GET["fileRename"] == "ok") {
+                            echo generateMessages("success", "File renamed successfully.");
+                        }
+                        if ($_GET["fileRename"] == "error") {
+                            echo generateMessages("warning", "Unknown error when renaming file.");
+                        }
+                        if ($_GET["fileRename"] == "exist") {
+                            echo generateMessages("warning", "Error: File already exists.");
+                        }
+                        if ($_GET["fileRename"] == "prohibitedChars") {
+                            echo generateMessages("warning", "Error: Prohibited characters in file name or probibited name.");
+                        }
+                    }
                 ?>
                 <div class="card">
                     <div class="card-body">
@@ -186,8 +201,8 @@
                         <input type="hidden" class="form-control mt-2" id="renameOldName" name="renameOldName" placeholder="Folder name" required>
 
                         <div class="form-group">
-                            <label for="renameNewName">New Folder name:</label>
-                            <input type="text" class="form-control mt-2" id="renameNewName" name="renameNewName" placeholder="Folder name" required>
+                            <label for="renameNewFolderName">New Folder name:</label>
+                            <input type="text" class="form-control mt-2" id="renameNewFolderName" name="renameNewFolderName" placeholder="Folder name" required>
                         </div>
                         <div class="text-end mt-3">
                             <button type="submit" class="btn btn-primary mt-3">Rename Folder</button>
@@ -219,6 +234,34 @@
             </div>
         </div>
     </div>
+
+
+    <div class="modal fade" id="renameFile" novalidate>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Rename File</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="api.php" method="post">
+                        <input type="hidden" class="form-control mt-2" id="renameOldName" name="renameOldName" placeholder="File name" required>
+
+                        <div class="form-group">
+                            <label for="renameNewFileName">New File name:</label>
+                            <input type="text" class="form-control mt-2" id="renameNewFileName" name="renameNewFileName" placeholder="File name" required>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-primary mt-3">Rename Folder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
 
     <?php

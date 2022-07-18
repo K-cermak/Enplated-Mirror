@@ -34,7 +34,11 @@ function loadFile(fileName) {
                 <button type="button" class="btn btn-secondary mt-2 mx-1" onclick="copyLink('` + webUrl + fileName.querySelector("h6").innerText + `', this)"><i class="bi bi-link-45deg"></i> Copy Link</button>
                 <button type="button" class="btn btn-dark mt-2 mx-1" onclick="openLink('` + webUrl + fileName.querySelector("h6").innerText + `')"><i class="bi bi-box-arrow-up-right"></i> Open</button>
             </div>
-            `;
+
+            <div class="text-center mt-4 mb-5">
+                <button type="button" class="btn btn-warning mt-2 mx-1" onclick="renameFile('` + fileName.querySelector("h6").innerText + `')"><i class="bi bi-pencil-square"></i> Rename File</button>
+                <button type="button" class="btn btn-danger mt-2 mx-1" onclick="deleteFolder('` + fileName.querySelector("h6").innerText + `')"><i class="bi bi-trash"></i> Delete File</button>
+            </div>`;
 
         } else {
             document.querySelector('.selectedInfo div').innerHTML = "<h6>Error loading file info</h6>";
@@ -66,15 +70,14 @@ function loadFolder(folderName) {
             <h6><strong>Folder permission:</strong> ` + data.permissions + `</h6>
             
             <div class="text-center mt-4 mb-5">
-            <button type="button" class="btn btn-secondary mt-2 mx-1" onclick="copyLink('` + webUrl + folderName.querySelector("h6").innerText + `', this)"><i class="bi bi-link-45deg"></i> Copy Link</button>
-            <button type="button" class="btn btn-dark mt-2 mx-1" onclick="openLink('` + webUrl + folderName.querySelector("h6").innerText + `')"><i class="bi bi-box-arrow-up-right"></i> Open</button>
+                <button type="button" class="btn btn-secondary mt-2 mx-1" onclick="copyLink('` + webUrl + folderName.querySelector("h6").innerText + `', this)"><i class="bi bi-link-45deg"></i> Copy Link</button>
+                <button type="button" class="btn btn-dark mt-2 mx-1" onclick="openLink('` + webUrl + folderName.querySelector("h6").innerText + `')"><i class="bi bi-box-arrow-up-right"></i> Open</button>
+            </div>
 
             <div class="text-center mt-4 mb-5">
                 <button type="button" class="btn btn-warning mt-2 mx-1" onclick="renameFolder('` + folderName.querySelector("h6").innerText + `')"><i class="bi bi-pencil-square"></i> Rename Folder</button>
                 <button type="button" class="btn btn-danger mt-2 mx-1" onclick="deleteFolder('` + folderName.querySelector("h6").innerText + `')"><i class="bi bi-trash"></i> Delete Folder</button>
-            </div>
-        </div>
-            `;
+            </div>`;
 
         } else {
             document.querySelector('.selectedInfo div').innerHTML = "<h6>Error loading folder info</h6>";
@@ -162,4 +165,12 @@ function deleteFolder(name) {
 
     document.querySelector("#deleteFolder .modal-body p strong").innerHTML = name;
     document.querySelectorAll("#deleteFolder input")[0].value = name;
+}
+
+function renameFile(currentName) {
+    let myModal = new bootstrap.Modal(document.querySelector('#renameFile'));
+    myModal.show();
+
+    document.querySelectorAll("#renameFile input")[0].value = currentName;
+    document.querySelectorAll("#renameFile input")[1].value = currentName;
 }
