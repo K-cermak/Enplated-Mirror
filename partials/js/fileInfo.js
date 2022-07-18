@@ -37,7 +37,7 @@ function loadFile(fileName) {
 
             <div class="text-center mt-4 mb-5">
                 <button type="button" class="btn btn-warning mt-2 mx-1" onclick="renameFile('` + fileName.querySelector("h6").innerText + `')"><i class="bi bi-pencil-square"></i> Rename File</button>
-                <button type="button" class="btn btn-danger mt-2 mx-1" onclick="deleteFolder('` + fileName.querySelector("h6").innerText + `')"><i class="bi bi-trash"></i> Delete File</button>
+                <button type="button" class="btn btn-danger mt-2 mx-1" onclick="deleteFile('` + fileName.querySelector("h6").innerText + `')"><i class="bi bi-trash"></i> Delete File</button>
             </div>`;
 
         } else {
@@ -173,4 +173,12 @@ function renameFile(currentName) {
 
     document.querySelectorAll("#renameFile input")[0].value = currentName;
     document.querySelectorAll("#renameFile input")[1].value = currentName;
+}
+
+function deleteFile(name) {
+    let myModal = new bootstrap.Modal(document.querySelector('#deleteFile'));
+    myModal.show();
+
+    document.querySelector("#deleteFile .modal-body p strong").innerHTML = name;
+    document.querySelectorAll("#deleteFile input")[0].value = name;
 }

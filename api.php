@@ -155,6 +155,19 @@
         }
     }
 
+    if ($_POST && isset($_POST["deleteFileName"])) {
+        $fileName = $_POST["deleteFileName"];
+        echo $_SESSION["current_folder"] . $fileName;
+
+        if (unlink($_SESSION["current_folder"] . $fileName)) {
+            header("Location: index.php?fileDelete=ok");
+            die();
+        } else {
+            header("Location: index.php?fileDelete=error");
+            die();
+        }
+    }
+
 
     //***********************************************************
     //                    FUNCTIONS

@@ -71,59 +71,7 @@
         <div class="row">
             <div class="col-sm-9">
                 <?php
-                    if (isset($_GET["folderCreate"])) {
-                        if ($_GET["folderCreate"] == "ok") {
-                            echo generateMessages("success", "Folder created successfully.");
-                        }
-                        if ($_GET["folderCreate"] == "error") {
-                            echo generateMessages("warning", "Unknown error when creating folder.");
-                        }
-                        if ($_GET["folderCreate"] == "exist") {
-                            echo generateMessages("warning", "Error: Folder already exists.");
-                        }
-                        if ($_GET["folderCreate"] == "prohibitedChars") {
-                            echo generateMessages("warning", "Error: Prohibited characters in folder name or probibited name.");
-                        }
-                    }
-
-                    if (isset($_GET["folderRename"])) {
-                        if ($_GET["folderRename"] == "ok") {
-                            echo generateMessages("success", "Folder renamed successfully.");
-                        }
-                        if ($_GET["folderRename"] == "error") {
-                            echo generateMessages("warning", "Unknown error when renaming folder.");
-                        }
-                        if ($_GET["folderRename"] == "exist") {
-                            echo generateMessages("warning", "Error: Folder already exists.");
-                        }
-                        if ($_GET["folderRename"] == "prohibitedChars") {
-                            echo generateMessages("warning", "Error: Prohibited characters in folder name or probibited name.");
-                        }
-                    }
-
-                    if (isset($_GET["folderDelete"])) {
-                        if ($_GET["folderDelete"] == "ok") {
-                            echo generateMessages("success", "Folder deleted successfully.");
-                        }
-                        if ($_GET["folderDelete"] == "error") {
-                            echo generateMessages("warning", "Unknown error when deleting folder.");
-                        }
-                    }
-
-                    if (isset($_GET["fileRename"])) {
-                        if ($_GET["fileRename"] == "ok") {
-                            echo generateMessages("success", "File renamed successfully.");
-                        }
-                        if ($_GET["fileRename"] == "error") {
-                            echo generateMessages("warning", "Unknown error when renaming file.");
-                        }
-                        if ($_GET["fileRename"] == "exist") {
-                            echo generateMessages("warning", "Error: File already exists.");
-                        }
-                        if ($_GET["fileRename"] == "prohibitedChars") {
-                            echo generateMessages("warning", "Error: Prohibited characters in file name or probibited name.");
-                        }
-                    }
+                    echo messageChecker();
                 ?>
                 <div class="card">
                     <div class="card-body">
@@ -261,6 +209,27 @@
         </div>
     </div>
 
+    <div class="modal fade" id="deleteFile" novalidate>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Delete File</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>Do you really want to delete file <strong></strong>?</p>
+
+                    <form action="api.php" method="post">
+                        <input type="hidden" class="form-control mt-2" id="deleteFileName" name="deleteFileName" placeholder="File name" required>
+                        <div class="text-end mt-3">
+                            <button type="submit" class="btn btn-danger mt-3">Delete File</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -453,6 +422,74 @@
             return $folder;
         }
 
+        function messageChecker() {
+            $message = "";
+            if (isset($_GET["folderCreate"])) {
+                if ($_GET["folderCreate"] == "ok") {
+                    $message .= generateMessages("success", "Folder created successfully.");
+                }
+                if ($_GET["folderCreate"] == "error") {
+                    $message .= generateMessages("warning", "Unknown error when creating folder.");
+                }
+                if ($_GET["folderCreate"] == "exist") {
+                    $message .= generateMessages("warning", "Error: Folder already exists.");
+                }
+                if ($_GET["folderCreate"] == "prohibitedChars") {
+                    $message .= generateMessages("warning", "Error: Prohibited characters in folder name or probibited name.");
+                }
+            }
+
+            if (isset($_GET["folderRename"])) {
+                if ($_GET["folderRename"] == "ok") {
+                    $message .= generateMessages("success", "Folder renamed successfully.");
+                }
+                if ($_GET["folderRename"] == "error") {
+                    $message .= generateMessages("warning", "Unknown error when renaming folder.");
+                }
+                if ($_GET["folderRename"] == "exist") {
+                    $message .= generateMessages("warning", "Error: Folder already exists.");
+                }
+                if ($_GET["folderRename"] == "prohibitedChars") {
+                    $message .= generateMessages("warning", "Error: Prohibited characters in folder name or probibited name.");
+                }
+            }
+
+            if (isset($_GET["folderDelete"])) {
+                if ($_GET["folderDelete"] == "ok") {
+                    $message .= generateMessages("success", "Folder deleted successfully.");
+                }
+                if ($_GET["folderDelete"] == "error") {
+                    $message .= generateMessages("warning", "Unknown error when deleting folder.");
+                }
+            }
+
+            if (isset($_GET["fileRename"])) {
+                if ($_GET["fileRename"] == "ok") {
+                    $message .= generateMessages("success", "File renamed successfully.");
+                }
+                if ($_GET["fileRename"] == "error") {
+                    $message .= generateMessages("warning", "Unknown error when renaming file.");
+                }
+                if ($_GET["fileRename"] == "exist") {
+                    $message .= generateMessages("warning", "Error: File already exists.");
+                }
+                if ($_GET["fileRename"] == "prohibitedChars") {
+                    $message .= generateMessages("warning", "Error: Prohibited characters in file name or probibited name.");
+                }
+            }
+
+            if (isset($_GET["fileDelete"])) {
+                if ($_GET["fileDelete"] == "ok") {
+                    $message .= generateMessages("success", "File deleted successfully.");
+                }
+                if ($_GET["fileDelete"] == "error") {
+                    $message .= generateMessages("warning", "Unknown error when deleting file.");
+                }
+            }
+            return $message;
+        }
+
+        
         function generateMessages($type, $message) {
             return '<div class="alert alert-'.$type.' alert-dismissible fade show" role="alert">
                     '.$message.'
