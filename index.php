@@ -37,10 +37,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enplated Mirror</title>
+    <title><?php echo APP_NAME; ?></title>
 
     <meta name="color-scheme" content="light dark">
-    <link rel="icon" type="image/png" href=" partials/images/png-favicon.png">
+    <link rel="icon" type="image/png" href="<?php echo FAVICON_LOCATION; ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-nightfall.min.css" rel="stylesheet" media="(prefers-color-scheme: dark)">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
@@ -62,7 +62,7 @@
     <header>
         <div class="row">
             <div class="col-md-12">
-                <h1>Enplated Mirror</h1>
+                <h1><?php echo APP_NAME; ?></h1>
             </div>
         </div>
     </header>
