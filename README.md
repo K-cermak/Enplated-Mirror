@@ -1,10 +1,10 @@
 <p align="center">
     <a href="https://enplated-mirror.k-cermak.com">
-        <img src="https://mirror.k-cermak.com/data/logo-v3/Logo-enplatedmirror-bg.svg" width="700" height="150" alt="Enplated Mirror logo">
+        <img src="https://mirror.k-cermak.com/data/logo-v3/logo-enplatedmirror-bg.svg" width="700" height="150" alt="Enplated Mirror logo">
     </a>
     <br>
         <br>
-    <strong>Manage easily your photo galleries, downloads, etc..</strong>
+    <strong>Manage easily your photo galleries, downloadable files, etc..</strong>
 </p>
 
 <br/>
