@@ -3,6 +3,11 @@
     session_start();
     require_once "settings.php";
 
+    if (!isset($_SESSION["accessCode"]) || $_SESSION["accessCode"] != ACCESS_CODE) {
+        header("Location: login.php");
+        die();
+    }
+
     if (!isset($_SESSION["current_folder"])) {
         $_SESSION["current_folder"] = ROOT_FOLDER;
     }
@@ -40,6 +45,7 @@
     <title><?php echo APP_NAME; ?></title>
 
     <meta name="color-scheme" content="light dark">
+    <meta name="robots" content="noindex" />
     <link rel="icon" type="image/png" href="<?php echo FAVICON_LOCATION; ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-nightfall.min.css" rel="stylesheet" media="(prefers-color-scheme: dark)">
@@ -52,8 +58,11 @@
 <body class="d-flex flex-column min-vh-100">
     <header>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <h1><?php echo APP_NAME; ?></h1>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="login.php?logout" class="btn btn-danger">Logout</a>
             </div>
         </div>
     </header>
@@ -62,6 +71,12 @@
         <div class="row">
             <div class="col-sm-9">
                 <?php
+                    if (ACCESS_CODE == "") {
+                        echo "<div class='alert alert-danger mb-5' role='alert'>Access Code is not set. Set it in settings.php and refresh this page.</div>";
+                    }
+                    if (ACCESS_CODE == "12345") {
+                        echo "<div class='alert alert-danger mb-5' role='alert'>You are using your default Access Code. You should change it in settings.php.</div>";
+                    }
                     echo messageChecker();
                 ?>
                 <div class="card">

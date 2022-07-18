@@ -1,6 +1,12 @@
 <?php
+    header('Content-Type: text/html; charset=utf-8');
     session_start();
-    //Verify login!
+    require_once "settings.php";
+
+    if (!isset($_SESSION["accessCode"]) || $_SESSION["accessCode"] != ACCESS_CODE) {
+        header("Location: login.php");
+        die();
+    }
 
     if ($_POST && isset($_POST["fileInfo"])) {
         //return json with file info
@@ -215,6 +221,10 @@
         header("Location: index.php?fileUpload=completed&success=" . $success . "&error=" . $error . "&exist=" . $exist . "&prohibitedChars=" . $prohibitedChars);
         die();
     }
+
+    //if no action is set, return to login
+    header("Location: login.php");
+    die();
 
 
     //***********************************************************
