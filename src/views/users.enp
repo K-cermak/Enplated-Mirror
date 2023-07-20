@@ -1,0 +1,94 @@
+@include ("partials/head")
+@include ("partials/header")
+
+<div class="d-flex flex-column align-items-center mt-5">
+    <h1>Users</h1>
+
+    <button class="btn btn-primary mt-2" id="newUserRun">Create a new user</button>
+
+    @if (isset($error) && $error != "")
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Error:</strong> {{ $error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    @if (isset($success) && $success != "")
+        <div class="container">
+            <div class="alert alert-success alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Success:</strong> {{ $success }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    @php
+        print_r($users);   
+    @endphp
+
+
+</div>
+
+<div class="modal fade" tabindex="-1" id="newUser">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ env("BASE_URL") }}/dashboard/users?newUser" method="POST">
+                    <div class="floating-label-group mt-3">
+                        <input type="text" id="newName" name="newName" class="form-control" required minlength="3" maxlength="20" placeholder=" ">
+                        <label class="floating-label">Name</label>
+                    </div>
+
+                    <div class="floating-label-group mt-5">
+                        <input type="password" id="newPassword" name="newPassword" class="form-control" required minlength="6" placeholder=" ">
+                        <label class="floating-label">Password</label>
+                    </div>
+
+                    <p>
+                        <span data-bs-toggle="tooltip" data-bs-placement="left" title="" data-bs-original-title="The user only has access to folders depending on which group they are in. The admin has automatic access everywhere and can also change any settings - including deleting your account! Do not select the admin option unless necessary.">
+                            <i class="bi bi-question-circle"></i>
+                        </span>
+                        Privilage Level
+                    </p>
+
+                    <div class="floating-label-group">
+                        <select class="form-select" name="privilageLevel">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <div class="text-center text-lg-start mt-4 pt-2">
+                        <button type="submit" class="btn btn-primary px-5">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener("load", function() {
+        document.querySelector("#newUserRun").addEventListener("click", function() {
+            var modal = new bootstrap.Modal(document.querySelector("#newUser"));
+            modal.show();
+        });
+
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+    });
+
+    //remove all parameters from url
+    window.history.replaceState('', '', window.location.pathname);
+</script>
+
+@include ("partials/footer")

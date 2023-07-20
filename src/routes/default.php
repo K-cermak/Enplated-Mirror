@@ -1,5 +1,7 @@
 <?php
     registerRoutesFile(__DIR__ . '/main.php');
+    registerRoutesFile(__DIR__ . '/login.php');
+    registerRoutesFile(__DIR__ . '/dashboard.php');
 
     function registerRoutesFile($file) {
         require_once $file;

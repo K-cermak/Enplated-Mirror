@@ -1,0 +1,41 @@
+body {
+    font-family: 'Montserrat', sans-serif !important;
+}
+.row {
+    margin: 0;
+}
+
+.iconPointer {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.iconPointer:hover {
+    color: #3c52d5 !important;
+}
+
+.floating-label-group {
+    position: relative;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.floating-label-group .floating-label {
+    font-size: 13px;
+    color: #595959;
+    position: absolute;
+    pointer-events: none;
+    top: 9px;
+    left: 12px;
+    transition: all 0.2s ease;
+}
+
+.floating-label-group input:focus ~ .floating-label,
+.floating-label-group input:not(:focus):not(:placeholder-shown) ~ .floating-label {
+    top: -30px;
+    bottom: 0px;
+    left: 0px;
+    font-size: 15px;
+    opacity: 1;
+    color: #343434;
+}

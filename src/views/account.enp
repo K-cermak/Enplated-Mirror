@@ -1,0 +1,110 @@
+@include ("partials/head")
+@include ("partials/header")
+
+<div class="d-flex flex-column align-items-center mt-5">
+    <h1>Account</h1>
+
+    @if (isset($error) && $error != "")
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Error:</strong> {{ $error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    <h4 class="lead mt-3">Last login: {{ $userInfo["lastLogin"] }}</h4>
+    <h4 class="lead">Registed on: {{ $userInfo["registered"] }}</h4>
+
+    <h4 class="lead mt-5">Username: {{ $_SESSION["username"] }} <i class="bi bi-pencil-square text-primary iconPointer" id="changeNameRun"></i></h4>
+    <h4 class="lead">Account type: 
+        @if ($_SESSION["privilageLevel"] == 1)
+            <span class="text-danger">Admin</span>
+        @else
+        <span class="text-info">User</span>
+        @endif
+    </h4>
+    <button class="btn btn-primary mt-3" id="changePasswordRun">Change password</button>
+</div>
+
+<div class="modal fade" tabindex="-1" id="changeName">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Name</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if ($_SESSION["privilageLevel"] == 2)
+                    <p>You cannot change your name. Please contact your admin to change it.</p>
+                @else
+                    <form action="{{ env("BASE_URL") }}/dashboard/account?changeName" method="POST">
+                        <div class="floating-label-group mt-3">
+                            <input type="text" id="newName" name="newName" class="form-control" required value="{{ $_SESSION["username"] }}" minlength="3" maxlength="20" placeholder=" ">
+                            <label class="floating-label">New Name</label>
+                        </div>
+                        <div class="text-center text-lg-start mt-4 pt-2">
+                            <button type="submit" class="btn btn-primary px-5">Change</button>
+                        </div>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="changePassword">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ env("BASE_URL") }}/dashboard/account?changePassword" method="POST">
+                    <div class="floating-label-group mt-5">
+                        <input type="password" id="oldPassword" name="oldPassword" class="form-control" required placeholder=" ">
+                        <label class="floating-label">Old Password</label>
+                    </div>
+
+                    <div class="floating-label-group mt-5">
+                        <input type="password" id="newPassword" name="newPassword" class="form-control" required minlength="6" placeholder=" ">
+                        <label class="floating-label">New Password</label>
+                    </div>
+
+                    <div class="floating-label-group mt-5">
+                        <input type="password" id="newPasswordVerify" name="newPasswordVerify" class="form-control" required minlength="6" placeholder=" ">
+                        <label class="floating-label">New Password Again</label>
+                    </div>
+
+                    <div class="text-center text-lg-start mt-4 pt-2">
+                        <button type="submit" class="btn btn-primary px-5">Change</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener("load", function() {
+        document.querySelector("#changeNameRun").addEventListener("click", function() {
+            var modal = new bootstrap.Modal(document.querySelector("#changeName"));
+            modal.show();
+        });
+
+        document.querySelector("#changePasswordRun").addEventListener("click", function() {
+            var modal = new bootstrap.Modal(document.querySelector("#changePassword"));
+            modal.show();
+        });
+    });
+    
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+    }
+    //remove all parameters from url
+    window.history.replaceState('', '', window.location.pathname);
+</script>
+
+
+@include ("partials/footer")
