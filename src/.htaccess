@@ -1,0 +1,11 @@
+RewriteEngine on
+
+# redirect all of the /public requests to /public
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^public/(.*)$ public/$1 [L]
+
+# redirect all of the /.well-known requests to /.well-known
+RewriteRule ^.well-known/(.*)$ .well-known/$1 [L]
+
+# otherwise, redirect to index.php
+RewriteRule ^ index.php
