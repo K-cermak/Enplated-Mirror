@@ -59,6 +59,7 @@
             $_SESSION["userId"] = $result["id"];
             $_SESSION["username"] = $result["loginName"];
             $_SESSION["privilageLevel"] = $result["privilageLevel"];
+            $_SESSION["passwordCheck"] = $result["password"];
             $_SESSION["loginAttempts"] = 0;
             $_SESSION["lastAttempt"] = 0;
             header('Location: ' . getAppEnvVar("BASE_URL") . "/dashboard?logged");

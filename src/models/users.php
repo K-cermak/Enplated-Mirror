@@ -1,12 +1,37 @@
 <?php
     //LOGIN
     function verifyLogin($db, $username, $password) {
-        $stmt = $db->prepare("SELECT id, loginName, privilageLevel FROM users WHERE loginName = :username AND password = :password");
+        $stmt = $db->prepare("SELECT id, loginName, privilageLevel, password FROM users WHERE loginName = :username AND password = :password");
         $stmt->bindParam(':username', $username);
         $stmt->bindParam(':password', $password);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($result === false) {
+            return false;
+        }
+
+        //cut password for first 10 characters
+        $result["password"] = substr($result["password"], 0, 10);
         return $result;
+    }
+
+    function verifyNothingChanged($db, $username, $privilageLevel, $passwordCheck) {
+        $stmt = $db->prepare("SELECT password FROM users WHERE loginName = :username AND privilageLevel = :privilageLevel");
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':privilageLevel', $privilageLevel);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($result === false) {
+            return false;
+        }
+
+        //cut password for first 10 characters
+        $result["password"] = substr($result["password"], 0, 10);
+        if ($result["password"] == $passwordCheck) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function getUsersInfo($db, $id) {

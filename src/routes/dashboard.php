@@ -310,6 +310,14 @@
                 require_once "engine/errors/401.php";
             }
             die();
+        } else {
+            //check if something changed in user account
+            $result = modelCall('users', 'verifyNothingChanged', ['db' => getDatabaseEnvConn('sqlite'), "username" => $_SESSION["username"], "privilageLevel" => $_SESSION["privilageLevel"], "passwordCheck" => $_SESSION["passwordCheck"]]);
+            if ($result == false) {
+                session_destroy();
+                header('Location: ' . getAppEnvVar("BASE_URL") . "/" . getAppEnvVar("LOGIN_URL") . "?accountChanged");
+                die();
+            }
         }
     }
 

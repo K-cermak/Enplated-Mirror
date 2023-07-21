@@ -49,7 +49,16 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     @endif
-                
+
+                    
+
+                    @if (isset($_GET["accountChanged"]))
+                        <div class="alert alert-warning alert-dismissible fade show mb-5" role="alert">
+                            During your work, your account information has been changed (probably by another user). Please log in again. 
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+                    
 
                     <div class="floating-label-group">
                         <input type="text" id="username" name="username" class="form-control" autofocus required />
