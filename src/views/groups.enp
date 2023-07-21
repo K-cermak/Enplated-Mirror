@@ -1,0 +1,234 @@
+@include ("partials/head")
+@include ("partials/header")
+
+<div class="d-flex flex-column align-items-center mt-5">
+    <h1>Groups</h1>
+
+    <button class="btn btn-primary mt-2" id="newGroupRun"><i class="bi bi-plus-circle"></i> Create a new group</button>
+
+    @if (isset($error) && $error != "")
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Error:</strong> {{ $error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    @if (isset($success) && $success != "")
+        <div class="container">
+            <div class="alert alert-success alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Success:</strong> {{ $success }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    <div class="container mt-5">
+        <div class="accordion" id="groupsList">
+            @if (count($groups) == 0)
+                <div class="alert alert-primary text-center fade show my-3 w-100" role="alert">
+                    There are no groups yet.
+                </div>
+            @endif
+
+            @foreach ($groups as $group)
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordeon-{{ $group["id"] }}" aria-expanded="false" aria-controls="accordeon-{{ $group["id"] }}">
+                            <strong>Group name:&nbsp; </strong> <span class="currentName">{{ $group["groupName"] }}</span> &nbsp; 
+                            @if (count($group["users"]) == 1)
+                                <span class="badge bg-primary">1 User</span>
+                            @else
+                                <span class="badge bg-primary">@php echo count($group["users"]); @endphp Users</span>
+                            @endif
+                        </button>
+                    </h2>
+                    <div id="accordeon-{{ $group["id"] }}" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <p><strong>Users in this group: </strong>
+                                @php
+                                    $userString = "";
+                                @endphp
+                                @for ($i = 0; $i < count($group["users"]); $i++)
+                                    {{ $group["users"][$i]["loginName"] }}@if ($i != count($group["users"]) - 1), @endif
+                                    @php
+                                        $userString .= $group["users"][$i]["id"] . ",";
+                                    @endphp
+                                @endfor
+                                @if (count($group["users"]) == 0)
+                                    <i>no users</i>
+                                @endif
+                                @php
+                                    //remove last comma
+                                    $userString = substr($userString, 0, -1);
+                                @endphp
+                            </p>
+                            <div class="d-flex justify-content-center">
+                                <button class="btn btn-secondary m-2 manageUsersRun" dataId="{{ $group["id"] }}" dataUsers="{{ $userString }}"><i class="bi bi-people"></i> Manage Users</button>
+                                <button class="btn btn-primary m-2 changeNameRun" dataId="{{ $group["id"] }}"><i class="bi bi-pencil-square"></i> Change Name</button>
+                                <button class="btn btn-danger m-2 resetPasswordRun" dataId="{{ $group["id"] }}"><i class="bi bi-person-fill-lock"></i> Delete Group</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="newGroup">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Group</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ env("BASE_URL") }}/dashboard/groups?newGroup" method="POST">
+                    <div class="floating-label-group mt-3">
+                        <input type="text" name="newName" class="form-control" minlength="3" maxlength="20" placeholder=" " required>
+                        <label class="floating-label">Group Name</label>
+                    </div>
+
+                    <div class="text-center text-lg-start mt-4 pt-2">
+                        <button type="submit" class="btn btn-primary px-5">Create a new group</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" tabindex="-1" id="changeName">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Name</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ env("BASE_URL") }}/dashboard/groups?changeName" method="POST">
+                    <input type="hidden" name="groupId" id="groupIdChangeName" value="">
+                    <div class="floating-label-group mt-3">
+                        <input type="text" id="renameName" name="newName" class="form-control" value="" minlength="3" maxlength="20" placeholder=" " required>
+                        <label class="floating-label">New Name</label>
+                    </div>
+                    <div class="text-center text-lg-start mt-4 pt-2">
+                        <button type="submit" class="btn btn-primary px-5">Change Name</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="manageUsers">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage Users in Group</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ env("BASE_URL") }}/dashboard/groups?manageUsers" method="POST">
+                    <input type="hidden" name="groupId" id="selectedGroup" value="">
+                    <p>If you check the checkbox next to a user's name, the user will be assigned to that group, and the permissions that are set for that group will be assigned to that user.</p>
+
+                    @foreach ($users as $user)
+                        <div class="form-check">
+                            <input class="form-check-input userCheckboxes" type="checkbox" value="{{ $user["id"] }}" name="selectedUsers[]" id="checkbox-{{ $user["id"] }}">
+                            <label class="form-check-label" for="checkbox-{{ $user["id"] }}">{{ $user["loginName"] }}</label>
+                        </div>
+                    @endforeach
+                    
+                    <div class="text-center text-lg-start mt-4 pt-2 d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary px-3">Save changes</button>
+                        <button type="reset" class="btn btn-secondary px-3 reset">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="deleteGroup">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Group</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ env("BASE_URL") }}/dashboard/groups?deleteGroup" method="POST">
+                    <input type="hidden" name="groupId" id="groupToDelete" value="">
+                    <p>Deleting a group permanently removes all connections to users and all set permissions. The users themselves will not be deleted.</p>
+                    <p class="text-danger"><strong>Are you really sure what you're doing?</strong></p>
+                    
+                    <div class="text-center text-lg-start mt-4 pt-2 d-flex justify-content-between">
+                        <button type="submit" class="btn btn-danger px-3">Delete Group</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    window.addEventListener("load", function() {
+        document.querySelector("#newGroupRun").addEventListener("click", function() {
+            var modal = new bootstrap.Modal(document.querySelector("#newGroup"));
+            modal.show();
+        });
+
+        //MANAGE USERS
+        let manageUsersModal;
+        document.querySelectorAll(".manageUsersRun").forEach(function(element) {
+            element.addEventListener("click", function() {
+                manageUsersModal = new bootstrap.Modal(document.querySelector("#manageUsers"));
+                manageUsersModal.show();
+
+                document.querySelector("#selectedGroup").value = element.getAttribute("dataId");
+                for (let i = 0; i < document.querySelectorAll(".userCheckboxes").length; i++) {
+                    document.querySelectorAll(".userCheckboxes")[i].checked = false;
+                }
+                let users = element.getAttribute("dataUsers").split(",");
+                for (let i = 0; i < users.length; i++) {
+                    document.querySelector("#checkbox-" + users[i]).checked = true;
+                }
+            });
+        });
+
+        document.querySelector("#manageUsers .reset").addEventListener("click", function() {
+            manageUsersModal.hide();
+        });
+
+        //CHANGE NAME
+        document.querySelectorAll(".changeNameRun").forEach(function(element) {
+            element.addEventListener("click", function() {
+                var modal = new bootstrap.Modal(document.querySelector("#changeName"));
+                modal.show();
+
+                document.querySelector("#groupIdChangeName").value = element.getAttribute("dataId");
+                document.querySelector("#renameName").value = element.parentElement.parentElement.parentElement.parentElement.querySelector(".currentName").innerHTML;
+            });
+        });
+
+        //DELETE GROUP
+        document.querySelectorAll(".resetPasswordRun").forEach(function(element) {
+            element.addEventListener("click", function() {
+                var modal = new bootstrap.Modal(document.querySelector("#deleteGroup"));
+                modal.show();
+
+                document.querySelector("#groupToDelete").value = element.getAttribute("dataId");
+            });
+        });
+    });
+
+    //remove all parameters from url
+    window.history.replaceState('', '', window.location.pathname);
+</script>
+
+@include ("partials/footer")

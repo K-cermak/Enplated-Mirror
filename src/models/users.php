@@ -35,7 +35,7 @@
     }
 
     function getUsersInfo($db, $id) {
-        $stmt = $db->prepare("SELECT registered, lastLogin FROM users WHERE id = :id");
+        $stmt = $db->prepare("SELECT privilageLevel, registered, lastLogin FROM users WHERE id = :id");
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -52,6 +52,14 @@
     //USERS LISTING
     function getAllUsers($db) {
         $stmt = $db->prepare("SELECT id, loginName, privilageLevel, registered, lastLogin FROM users");
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    function getUsersWithPrivilage($db, $privilageLevel) {
+        $stmt = $db->prepare("SELECT id, loginName FROM users WHERE privilageLevel = :privilageLevel");
+        $stmt->bindParam(':privilageLevel', $privilageLevel);
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $result;

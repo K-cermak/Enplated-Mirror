@@ -7,11 +7,17 @@
         finishRender($template);
     });
 
+
     checkRoute('GET', '/dashboard/users' , function() {
         redirectNotLogin();
         redirectIfNotAdmin();
 
         $users = modelCall('users', 'getAllUsers', ['db' => getDatabaseEnvConn('sqlite')]);
+        for ($i = 0; $i < count($users); $i++) {
+            if ($users[$i]["privilageLevel"] == 2 || $users[$i]["privilageLevel"] == 0) {
+                $users[$i]["groups"] = modelCall('groups', 'getGroupsByUser', ['db' => getDatabaseEnvConn('sqlite'), "userId" => $users[$i]["id"]]);
+            }
+        }
 
         $template = processTemplate("users", ["pageTitle" => "Users", "users" => $users]);
         finishRender($template);
@@ -33,7 +39,7 @@
                 //check if name does not exist
                 $result = modelCall('users', 'checkIfUsernameExist', ['db' => getDatabaseEnvConn('sqlite'), "username" => $newName]);
                 if ($result != false) {
-                    $error = "Username already exist or nothing to change.";
+                    $error = "Username already exist.";
                     break;
                 }
 
@@ -183,6 +189,12 @@
 
 
         $users = modelCall('users', 'getAllUsers', ['db' => getDatabaseEnvConn('sqlite')]);
+        for ($i = 0; $i < count($users); $i++) {
+            if ($users[$i]["privilageLevel"] == 2 || $users[$i]["privilageLevel"] == 0) {
+                $users[$i]["groups"] = modelCall('groups', 'getGroupsByUser', ['db' => getDatabaseEnvConn('sqlite'), "userId" => $users[$i]["id"]]);
+            }
+        }
+
         $template = processTemplate("users", ["pageTitle" => "Users", "users" => $users, "error" => $error, "success" => $success]);
         finishRender($template);
     });
@@ -192,8 +204,163 @@
         redirectNotLogin();
         redirectIfNotAdmin();
 
-        //continue
+        $groups = modelCall('groups', 'getAllGroups', ['db' => getDatabaseEnvConn('sqlite')]);
+        for ($i = 0; $i < count($groups); $i++) {
+            $groups[$i]["users"] = modelCall('groups', 'getUsernamesInGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groups[$i]["id"]]);
+        }
+        $users = modelCall('users', 'getUsersWithPrivilage', ['db' => getDatabaseEnvConn('sqlite'), "privilageLevel" => 2]);
+
+        $template = processTemplate("groups", ["pageTitle" => "Groups", "groups" => $groups, "users" => $users]);
+        finishRender($template);
     });
+
+
+    checkRoute('POST', '/dashboard/groups' , function() {
+        redirectNotLogin();
+        redirectIfNotAdmin();
+
+        $error = "";
+        $success = "";
+
+        if (isset($_GET["newGroup"]) && isset($_POST["newName"]) && !empty($_POST["newName"])) {
+            do {
+                $newName = $_POST["newName"];
+
+                //check if name does not exist
+                $result = modelCall('groups', 'checkIfGroupNameExist', ['db' => getDatabaseEnvConn('sqlite'), "groupName" => $newName]);
+                if ($result != false) {
+                    $error = "Group name already exist or nothing to change.";
+                    break;
+                }
+
+                //check if at least 3 chars and max 20 chars
+                if (strlen($newName) < 3 || strlen($newName) > 20) {
+                    $error = "Group name must be at least 3 characters and maximum 20 characters long.";
+                    break;
+                }
+
+                //check if only letters and numbers
+                if (!ctype_alnum($newName)) {
+                    $error = "Group name can only contain letters and numbers.";
+                    break;
+                }
+
+                //create group
+                modelCall('groups', 'createGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupName" => $newName]);
+                $success = "Group created succesfully.";
+
+            } while (false);
+        }
+        
+        if (isset($_GET["changeName"]) && isset($_POST["newName"]) && !empty($_POST["newName"]) && isset($_POST["groupId"]) && !empty($_POST["groupId"])) {
+            do {
+                $newName = $_POST["newName"];
+                $groupId = $_POST["groupId"];
+
+                //check if name does not exist
+                $result = modelCall('groups', 'checkIfGroupNameExist', ['db' => getDatabaseEnvConn('sqlite'), "groupName" => $newName]);
+                if ($result != false) {
+                    $error = "Group name already exist or nothing to change.";
+                    break;
+                }
+
+                //check if group exist
+                $result = modelCall('groups', 'getGroupInfo', ['db' => getDatabaseEnvConn('sqlite'), "id" => $groupId]);
+                if ($result == false) {
+                    $error = "Group does not exist.";
+                    break;
+                }
+
+                //check if at least 3 chars and max 20 chars
+                if (strlen($newName) < 3 || strlen($newName) > 20) {
+                    $error = "Group name must be at least 3 characters and maximum 20 characters long.";
+                    break;
+                }
+
+                //check if only letters and numbers
+                if (!ctype_alnum($newName)) {
+                    $error = "Group name can only contain letters and numbers.";
+                    break;
+                }
+
+                //update
+                modelCall('groups', 'renameGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupName" => $newName, "id" => $groupId]);
+                $success = "Group name changed succesfully.";
+                
+
+            } while (false);
+        }
+
+        if (isset($_GET["manageUsers"]) && isset($_POST["groupId"]) && !empty($_POST["groupId"])) {
+            do {
+                //check if group exist
+                $groupId = $_POST["groupId"];
+
+                $result = modelCall('groups', 'getGroupInfo', ['db' => getDatabaseEnvConn('sqlite'), "id" => $groupId]);
+                if ($result == false) {
+                    $error = "Group does not exist.";
+                    break;
+                }
+
+                //remove all users from group
+                modelCall('groups', 'removeAllUsersFromGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groupId]);
+
+                if (isset($_POST["selectedUsers"])) {
+                    for ($i = 0; $i < count($_POST["selectedUsers"]); $i++) {
+                        //check if user exist
+                        $userId = $_POST["selectedUsers"][$i];
+                        $result = modelCall('users', 'getUsersInfo', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId]);
+                        if ($result == false) {
+                            continue;
+                        }
+
+                        //check if user is not admin
+                        if ($result["privilageLevel"] == 1) {
+                            continue;
+                        }
+
+                        //add user to group
+                        modelCall('groups', 'addUserToGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groupId, "userId" => $userId]);
+                        $success = "All changes saved.";
+                    }
+                }
+
+                
+            } while (false);
+        }
+
+        if (isset($_GET["deleteGroup"]) && isset($_POST["groupId"]) && !empty($_POST["groupId"])) {
+            do {
+                //check if group exist
+                $groupId = $_POST["groupId"];
+
+                $result = modelCall('groups', 'getGroupInfo', ['db' => getDatabaseEnvConn('sqlite'), "id" => $groupId]);
+                if ($result == false) {
+                    $error = "Group does not exist.";
+                    break;
+                }
+
+                //remove all users from group
+                modelCall('groups', 'removeAllUsersFromGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groupId]);
+
+                //delete group
+                modelCall('groups', 'deleteGroup', ['db' => getDatabaseEnvConn('sqlite'), "id" => $groupId]);
+                $success = "Group deleted succesfully.";
+
+            } while (false);
+        }
+
+
+        $groups = modelCall('groups', 'getAllGroups', ['db' => getDatabaseEnvConn('sqlite')]);
+        for ($i = 0; $i < count($groups); $i++) {
+            $groups[$i]["users"] = modelCall('groups', 'getUsernamesInGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groups[$i]["id"]]);
+        }
+        $users = modelCall('users', 'getUsersWithPrivilage', ['db' => getDatabaseEnvConn('sqlite'), "privilageLevel" => 2]);
+
+        $template = processTemplate("groups", ["pageTitle" => "Groups", "groups" => $groups, "users" => $users, "error" => $error, "success" => $success]);
+        finishRender($template);
+    });
+
 
     checkRoute('GET', '/dashboard/drives' , function() {
         redirectNotLogin();
@@ -202,6 +369,7 @@
         //continue
     });
 
+
     checkRoute('GET', '/dashboard/account' , function() {
         redirectNotLogin();
 
@@ -209,6 +377,7 @@
         $template = processTemplate("account", ["pageTitle" => "Account", "userInfo" => $userInfo]);
         finishRender($template);
     });
+
 
     checkRoute('POST', '/dashboard/account' , function() {
         redirectNotLogin();
@@ -229,7 +398,7 @@
                 $result = modelCall('users', 'checkIfUsernameExist', ['db' => getDatabaseEnvConn('sqlite'), "username" => $newName]);
 
                 if ($result != false) {
-                    $error = "Username already exist or nothing to change.";
+                    $error = "Username already exist.";
                     break;
                 }
 
@@ -295,12 +464,14 @@
         finishRender($template);
     });
 
+
     checkRoute('GET', '/dashboard/logout' , function() {
         redirectNotLogin();
 
         session_destroy();
         header('Location: ' . getAppEnvVar("BASE_URL") . "/" . getAppEnvVar("LOGIN_URL") . "?logout");
     });
+
 
     function redirectNotLogin() {
         if (!isset($_SESSION["userId"])) {
