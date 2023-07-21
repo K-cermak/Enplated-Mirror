@@ -1,11 +1,21 @@
 <?php
     checkRoute('GET', '/' . getAppEnvVar("LOGIN_URL") , function() {
+        if (isset($_SESSION["userId"])) {
+            header('Location: ' . getAppEnvVar("BASE_URL") . "/dashboard");
+            die();
+        }
+
         $template = processTemplate("login", []);
         finishRender($template);
     });
 
 
     checkRoute('POST', '/' . getAppEnvVar("LOGIN_URL") , function() {
+        if (isset($_SESSION["userId"])) {
+            header('Location: ' . getAppEnvVar("BASE_URL") . "/dashboard");
+            die();
+        }
+
         $error = "";
         do {
             if (isset($_SESSION["loginAttempts"]) && $_SESSION["loginAttempts"] >= 5) {

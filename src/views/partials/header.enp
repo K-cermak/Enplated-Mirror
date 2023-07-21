@@ -12,9 +12,9 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Management</a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/users">Users</a></li>
-                                <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/groups">Groups</a></li>
-                                <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/drives">Drives</a></li>
+                                <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/users"><i class="bi bi-people"></i> Users</a></li>
+                                <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/groups"><i class="bi bi-card-checklist"></i> Groups</a></li>
+                                <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/drives"><i class="bi bi-hdd-stack"></i> Drives</a></li>
                             </ul>
                         </li>
                     </ul>
@@ -24,8 +24,8 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Logged as <strong>{{ $_SESSION["username"] }}</strong></a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/account">My account</a></li>
-                            <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/logout">Logout</a></li>
+                            <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/account"><i class="bi bi-person-circle"></i> My account</a></li>
+                            <li><a class="dropdown-item" href="{{ env('BASE_URL') }}/dashboard/logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                         </ul>
                     </li>
                 </ul>

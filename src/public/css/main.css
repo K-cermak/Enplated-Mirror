@@ -1,6 +1,9 @@
 body {
     font-family: 'Montserrat', sans-serif !important;
 }
+strong {
+    font-weight: 600 !important;
+}
 .row {
     margin: 0;
 }

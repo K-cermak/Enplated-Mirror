@@ -84,7 +84,7 @@
             <footer class="d-flex align-items-center px-5 py-3 mt-4 border-top navbar mt-auto">
                 <p>© @php echo date("Y"); @endphp. All rights reserved.</p>
             
-                <p>Powered by <a href="https://enplated.karlosoft.com/cdn" target="_blank">Enplated CDN</a> by <a href="https://karlosoft.com" target="_blank">Karlosoft</a>.</p>
+                <p>Powered by <a href="https://enplated.karlosoft.com/cdn" target="_blank">Enplated CDN v2.0</a> by <a href="https://karlosoft.com" target="_blank">Karlosoft</a>.</p>
               </footer>
 
         </div>

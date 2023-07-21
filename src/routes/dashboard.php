@@ -33,7 +33,7 @@
                 //check if name does not exist
                 $result = modelCall('users', 'checkIfUsernameExist', ['db' => getDatabaseEnvConn('sqlite'), "username" => $newName]);
                 if ($result != false) {
-                    $error = "Username already exist.";
+                    $error = "Username already exist or nothing to change.";
                     break;
                 }
 
@@ -67,6 +67,120 @@
 
             } while (false);
         }
+
+        if (isset($_GET["changeName"]) && isset($_POST["userId"]) && !empty($_POST["userId"]) && isset($_POST["newName"]) && !empty($_POST["newName"])) {
+            do {
+                $userId = $_POST["userId"];
+                $newName = $_POST["newName"];
+
+                //check if not logged user
+                if ($_SESSION["userId"] == $userId) {
+                    $error = "You are not allowed to change your username.";
+                    break;
+                }
+
+                //check if user exist
+                $result = modelCall('users', 'getUsersInfo', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId]);
+                if ($result == false) {
+                    $error = "User does not exist.";
+                    break;
+                }
+
+                //check if name does not exist
+                $result = modelCall('users', 'checkIfUsernameExist', ['db' => getDatabaseEnvConn('sqlite'), "username" => $newName]);
+                if ($result != false) {
+                    $error = "Username already exist or nothing to change.";
+                    break;
+                }
+
+                //check if at least 3 chars and max 20 chars
+                if (strlen($newName) < 3 || strlen($newName) > 20) {
+                    $error = "Username must be at least 3 characters and maximum 20 characters long.";
+                    break;
+                }
+                
+                //check if only letters and numbers
+                if (!ctype_alnum($newName)) {
+                    $error = "Username can only contain letters and numbers.";
+                    break;
+                }
+                
+                //update
+                modelCall('users', 'changeUsername', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId, "newName" => $newName]);
+                $success = "Username changed succesfully.";
+            } while (false);
+        }
+
+        if (isset($_GET["changePrivilageLevel"]) && isset($_POST["userId"]) && !empty($_POST["userId"]) && isset($_POST["newPrivilageLevel"]) && ($_POST["newPrivilageLevel"] == "blocked" || $_POST["newPrivilageLevel"] == "admin" || $_POST["newPrivilageLevel"] == "user")) {
+            do {
+                $userId = $_POST["userId"];
+                $newPrivilageLevel = $_POST["newPrivilageLevel"];
+
+                //check if not logged user
+                if ($_SESSION["userId"] == $userId) {
+                    $error = "You are not allowed to change your privilage level.";
+                    break;
+                }
+
+                //check if user exist
+                $result = modelCall('users', 'getUsersInfo', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId]);
+                if ($result == false) {
+                    $error = "User does not exist.";
+                    break;
+                }
+
+                if ($newPrivilageLevel == "blocked") {
+                    $newPrivilageLevel = 0;
+                } else if ($newPrivilageLevel == "user") {
+                    $newPrivilageLevel = 2;
+                } else if ($newPrivilageLevel == "admin") {
+                    $newPrivilageLevel = 1;
+                }
+
+                //update
+                modelCall('users', 'changePrivilageLevel', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId, "newPrivilageLevel" => $newPrivilageLevel]);
+                $success = "Privilage level changed succesfully.";
+
+            } while (false);
+        }
+
+        if (isset($_GET["changePassword"]) && isset($_POST["userId"]) && !empty($_POST["userId"]) && isset($_POST["newPassword"]) && !empty($_POST["newPassword"]) && isset($_POST["newPasswordVerify"]) && !empty($_POST["newPasswordVerify"])) {
+            do {
+                $userId = $_POST["userId"];
+                $newPassword = $_POST["newPassword"];
+                $newPasswordVerify = $_POST["newPasswordVerify"];
+
+                //check if not logged user
+                if ($_SESSION["userId"] == $userId) {
+                    $error = "You are not allowed to change your password.";
+                    break;
+                }
+
+                //check if user exist
+                $result = modelCall('users', 'getUsersInfo', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId]);
+                if ($result == false) {
+                    $error = "User does not exist.";
+                    break;
+                }
+
+                //check if newPassword is the same as newPasswordVerify
+                if ($newPassword != $newPasswordVerify) {
+                    $error = "New password does not match with control password.";
+                    break;
+                }
+
+                //check if newPassword is at least 6 chars
+                if (strlen($newPassword) < 6) {
+                    $error = "New password must be at least 6 characters long.";
+                    break;
+                }
+
+                //update
+                modelCall('users', 'changePassword', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId, "newPassword" => hash("sha256", $newPassword)]);
+                $success = "Password changed succesfully.";
+            } while (false);
+        }
+
 
         $users = modelCall('users', 'getAllUsers', ['db' => getDatabaseEnvConn('sqlite')]);
         $template = processTemplate("users", ["pageTitle" => "Users", "users" => $users, "error" => $error, "success" => $success]);
@@ -115,7 +229,7 @@
                 $result = modelCall('users', 'checkIfUsernameExist', ['db' => getDatabaseEnvConn('sqlite'), "username" => $newName]);
 
                 if ($result != false) {
-                    $error = "Username already exist.";
+                    $error = "Username already exist or nothing to change.";
                     break;
                 }
 
@@ -160,9 +274,9 @@
                     break;
                 }
 
-                //check if newPassword is at least 8 chars
+                //check if newPassword is at least 6 chars
                 if (strlen($newPassword) < 6) {
-                    $error = "New password must be at least 8 characters long.";
+                    $error = "New password must be at least 6 characters long.";
                     break;
                 }
 

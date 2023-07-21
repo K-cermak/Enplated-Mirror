@@ -33,7 +33,7 @@
     }
 
     function createUser($db, $name, $password, $privilageLevel) {
-        $stmt = $db->prepare("INSERT INTO users (loginName, password, privilageLevel, registered, lastLogin) VALUES (:name, :password, :privilageLevel, datetime('now'), datetime('now'))");
+        $stmt = $db->prepare("INSERT INTO users (loginName, password, privilageLevel, registered, lastLogin) VALUES (:name, :password, :privilageLevel, datetime('now'), '2000-00-00 00:00:00')");
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':password', $password);
         $stmt->bindParam(':privilageLevel', $privilageLevel);
@@ -76,4 +76,11 @@
     }
 
 
+    //PRIVILAGE LEVEL
+    function changePrivilageLevel($db, $id, $newPrivilageLevel) {
+        $stmt = $db->prepare("UPDATE users SET privilageLevel = :newPrivilageLevel WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':newPrivilageLevel', $newPrivilageLevel);
+        $stmt->execute();
+    }
 ?>
