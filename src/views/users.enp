@@ -52,9 +52,9 @@
 
                             @if ($user["id"] != $_SESSION["userId"])
                                 <div class="d-flex justify-content-center">
-                                    <button class="btn btn-primary m-2 changeNameRun" dataId="{{ $user["id"] }}">Change name</button>
-                                    <button class="btn btn-secondary m-2 changePrivilageRun" dataId="{{ $user["id"] }}">Change Privilage Level</button>
-                                    <button class="btn btn-danger m-2 resetPasswordRun" dataId="{{ $user["id"] }}">Reset password</button>
+                                    <button class="btn btn-primary m-2 changeNameRun" dataId="{{ $user["id"] }}"><i class="bi bi-pencil-square"></i> Change name</button>
+                                    <button class="btn btn-secondary m-2 changePrivilageRun" dataId="{{ $user["id"] }}"><i class="bi bi-person-fill-gear"></i> Change Privilage Level</button>
+                                    <button class="btn btn-danger m-2 resetPasswordRun" dataId="{{ $user["id"] }}"><i class="bi bi-person-fill-lock"></i> Reset password</button>
                                 </div>
                             @else
                                 <p>You can't change your own settings here, but you can go <a href="{{ env('BASE_URL') }}/dashboard/account" target="_blank">here</a> to manage your account.</p>
@@ -105,7 +105,7 @@
                     </div>
 
                     <div class="text-center text-lg-start mt-4 pt-2">
-                        <button type="submit" class="btn btn-primary px-5">Create</button>
+                        <button type="submit" class="btn btn-primary px-5">Create a new user</button>
                     </div>
                 </form>
             </div>
@@ -128,7 +128,7 @@
                         <label class="floating-label">New Name</label>
                     </div>
                     <div class="text-center text-lg-start mt-4 pt-2">
-                        <button type="submit" class="btn btn-primary px-5">Change</button>
+                        <button type="submit" class="btn btn-primary px-5">Change Name</button>
                     </div>
                 </form>
             </div>
@@ -154,7 +154,7 @@
                         <option value="blocked">Blocked</option>
                     </select>
                     <div class="text-center text-lg-start mt-4 pt-2">
-                        <button type="submit" class="btn btn-primary px-5">Change</button>
+                        <button type="submit" class="btn btn-primary px-5">Change Privilage Level</button>
                     </div>
                 </form>
             </div>
@@ -183,7 +183,7 @@
                     </div>
 
                     <div class="text-center text-lg-start mt-4 pt-2">
-                        <button type="submit" class="btn btn-primary px-5">Change</button>
+                        <button type="submit" class="btn btn-primary px-5">Change Password</button>
                     </div>
                 </form>
             </div>

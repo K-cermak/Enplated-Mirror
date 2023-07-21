@@ -24,7 +24,7 @@
             <span class="badge text-bg-info">User</span>
         @endif
     </h4>
-    <button class="btn btn-primary mt-3" id="changePasswordRun">Change password</button>
+    <button class="btn btn-primary mt-3" id="changePasswordRun"><i class="bi bi-person-fill-lock"></i> Change password</button>
 </div>
 
 <div class="modal fade" tabindex="-1" id="changeName">
@@ -78,7 +78,7 @@
                     </div>
 
                     <div class="text-center text-lg-start mt-4 pt-2">
-                        <button type="submit" class="btn btn-primary px-5">Change</button>
+                        <button type="submit" class="btn btn-primary px-5">Change Password</button>
                     </div>
                 </form>
             </div>
