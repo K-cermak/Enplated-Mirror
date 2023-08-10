@@ -28,7 +28,7 @@
             }
 
             if (!isset($_POST["username"]) || !isset($_POST["password"]) || empty($_POST["username"]) || empty($_POST["password"])) {
-                $error = "Please fill all the fields";
+                $error = "Please fill all the fields.";
                 break;
             }
 
@@ -37,7 +37,7 @@
             $result = modelCall('users', 'verifyLogin', ['db' => getDatabaseEnvConn('sqlite'), "username" => $username, "password" => hash("sha256", $password)]);
 
             if ($result === false) {
-                $error = "Wrong username or password";
+                $error = "Wrong username or password.";
                 if (!isset($_SESSION["loginAttempts"])) {
                     $_SESSION["loginAttempts"] = 0;
                 }

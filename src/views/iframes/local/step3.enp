@@ -1,0 +1,24 @@
+@include ("partials/head-iframe")
+
+<div class="container mt-3">
+    <form action="{{ env('BASE_URL') }}/iframes/new-drive?local&4" method="POST">
+        <p>Name the new shared space with a good name. This name will be displayed to all users for which the disk will be available.</p>
+
+        @if (isset($error) && $error != "")
+            <div class="container">
+                <div class="alert alert-danger alert-dismissible fade show my-3 w-100" role="alert">
+                    <strong>Error:</strong> {{ $error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <div class="floating-label-group mt-5">
+            <input type="text" id="renameName" name="newName" class="form-control" value="" minlength="3" maxlength="20" placeholder=" " required>
+            <label class="floating-label">Drive Name</label>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3"><i class="bi bi-check-circle"></i> Create a new drive</button>
+    </form>
+</div>
+
+@include ("/partials/footer")

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Iframe | {{ env('APP_NAME') }}</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+        <meta name="robots" content="noindex, nofollow">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel='icon' type='image/png' href='{{ env('BASE_URL') }}/public/img/favicon.png' />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="{{ env('BASE_URL') }}/public/css/main.css">
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/K-cermak/Enplated-Framework@enp-v3/enp-data/flash.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/K-cermak/Enplated-Framework@enp-v3/enp-data/flash.min.css">
+    </head>
+
+<body class="d-flex flex-column min-vh-100">
+    <script>
+        function genFlashMessage(msg, type, time) {
+            let settings = {
+                progress: true,
+                interactive: true,
+                timeout: time,
+                container: '.flash-container',
+            };
+
+            if (type == 'success')
+                window.FlashMessage.success(msg, settings);
+            else if (type == 'error')
+                window.FlashMessage.error(msg, settings);
+            else if (type == 'warning')
+                window.FlashMessage.warning(msg, settings);
+            else if (type == 'info')
+                window.FlashMessage.info(msg, settings);
+        }
+    </script>

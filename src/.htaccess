@@ -7,5 +7,8 @@ RewriteRule ^public/(.*)$ public/$1 [L]
 # redirect all of the /.well-known requests to /.well-known
 RewriteRule ^.well-known/(.*)$ .well-known/$1 [L]
 
+# redirect all of the /.cdn-data requests to /.cdn-data
+RewriteRule ^.cdn-data/(.*)$ .cdn-data/$1 [L]
+
 # otherwise, redirect to index.php
 RewriteRule ^ index.php

@@ -25,27 +25,10 @@ CREATE TABLE 'drives' (
     'driveName' TEXT, 'driveCredentials' TEXT NOT NULL
 );
 
-CREATE TABLE 'folders' (
-    'id' INTEGER PRIMARY KEY NOT NULL,
-    'drive' INTEGER NOT NULL,
-    'pathCheckerId'TEXT NOT NULL,
-    'allowPublicIndex' BOOLEAN NOT NULL,
-    'allowView' BOOLEAN NOT NULL,
-    FOREIGN KEY ('drive') REFERENCES 'drives' ('id')
-);
-
 CREATE TABLE 'drivesPrivilages' (
     'groupId' INTEGER NOT NULL,
     'driveId' INTEGER NOT NULL,
     PRIMARY KEY ('groupId', 'driveId'),
     FOREIGN KEY ('groupId') REFERENCES 'groups' ('id'),
     FOREIGN KEY ('driveId') REFERENCES 'drives' ('id')
-);
-
-CREATE TABLE 'foldersPrivilages' (
-    'groupId' INTEGER NOT NULL,
-    'folderId' INTEGER NOT NULL,
-    PRIMARY KEY ('groupId', 'folderId'),
-    FOREIGN KEY ('groupId') REFERENCES 'groups' ('id'),
-    FOREIGN KEY ('folderId') REFERENCES 'folders' ('id')
 );

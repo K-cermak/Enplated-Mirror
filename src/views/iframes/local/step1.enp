@@ -1,0 +1,239 @@
+@include ("partials/head-iframe")
+
+<p class="text-center">Now please select the folder you want to set as default (first) for your new drive. You can select a folder by clicking on confirm button, and move into the folder by double clicking.</p>
+        
+<div class="card">
+    <div class="card-body">
+        <div class="row card-title">
+            <div class="col-sm-9 mainPath"></div>
+            <div class="col-sm-3 text-end mt-1 toolbar">
+                <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
+                <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
+            </div>
+        </div>
+        <div>
+            <div class="row folders mt-3"></div>
+        </div>
+    </div>
+</div>
+<div class="d-flex justify-content-end">
+    <button class="btn btn-primary mt-3" id="confirmPahtRun"><i class="bi bi-check-circle"></i> Confirm selection</button>
+</div>
+
+<div class="modal fade" tabindex="-1" id="newFolder">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Folder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="floating-label-group mt-3">
+                    <input type="text" id="newFolderName" name="newName" class="form-control" minlength="1" maxlength="20" placeholder=" " required>
+                    <label class="floating-label">Folder Name</label>
+                </div>
+
+                <div class="text-center text-lg-start mt-4 pt-2">
+                    <button class="btn btn-primary px-5" id="newFolderSubmit">Create a New Folder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="confirmPathModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="lead">Are you sure you really have chosen the right path?</p>
+                <p class="folderPathSelect badge bg-secondary"></p>
+
+                <div class="text-center text-lg-start mt-4 pt-2">
+                    <form action="{{ env('BASE_URL') }}/iframes/new-drive?local&2" method="POST">
+                        <input type="hidden" class="folderPathSubmitValue" name="path" value="">
+                        <button type="submit "class="btn btn-primary px-5" id="confirmPathButton">Confirm</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var currentPath = "/";
+    var backupPath = "/";
+    generateFolders();
+
+    function generateFolders() {
+        axios.post('{{ env('BASE_URL') }}/api/folders', {
+            path: currentPath
+        })
+        .then(function (response) {
+            document.querySelector(".folders").innerHTML = "";
+
+            let folders = response.data.apiResponse.data;
+            if (folders.length == 0) {
+                document.querySelector(".folders").innerHTML = "<p class='text-center'>No folders found.</p>";
+            }
+            for (let i = 0; i < folders.length; i++) {
+                let data =
+                `<div class="card text-center folderDataFolder m-1" style="width: 8rem;">
+                    <img class="card-img-top mx-auto" src="{{ env('BASE_URL') }}/public/icons/folder.svg" alt="Folder icon" style="max-width:4rem;">
+                    <div class="card-body folderName">
+                        <h6>${folders[i]}</h6>
+                    </div>
+                </div>`;
+
+                document.querySelector(".folders").innerHTML += data;
+            }
+            selectFolder();
+            generatePath();
+            backupPath = currentPath;
+        })
+        .catch(function (error) {
+            currentPath = backupPath;
+            genFlashMessage("During the process, an error occurred (you may not have access rights). Please refresh page and try again.", "error", 20000)
+        });
+    }
+
+    function generatePath() {
+        document.querySelector(".mainPath").innerHTML = "";
+
+        //split path by /
+        let path = currentPath.split("/");
+        document.querySelector(".mainPath").innerHTML += "<button class='btn btn-secondary goRoot'>Root</button>";
+
+
+        for (let i = 0; i < path.length; i++) {
+            if (path[i] != "") {
+                document.querySelector(".mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
+                document.querySelector(".mainPath").innerHTML += `<button class='btn btn-secondary goPath my-1'>${path[i]}</button>`; 
+            }
+        }
+
+        document.querySelector(".goRoot").addEventListener("click", event => {
+            currentPath = "/";
+            generateFolders();
+        });
+
+        let goPath = document.querySelectorAll(".goPath");
+        for (let i = 0; i < goPath.length; i++) {
+            goPath[i].addEventListener("click", event => {
+                currentPath = "/";
+                for (let j = 0; j <= i; j++) {
+                    currentPath += goPath[j].innerText + "/";
+                }
+                generateFolders();
+            });
+        }
+
+    }
+
+    //FOLDER CLICK
+    function selectFolder() {
+        let folderDataFolders = document.querySelectorAll('.folderDataFolder');
+        folderDataFolders.forEach(function (folderDataFolder) {
+            folderDataFolder.addEventListener("click", event => {
+                deselectAllClear();
+                folderDataFolder.classList.add('selectedFolder');
+            });
+
+            folderDataFolder.addEventListener("dblclick", event => {
+                currentPath += folderDataFolder.querySelector(".folderName").innerText + "/";
+                generateFolders();
+            });
+        });
+    }
+
+    function deselectAllClear() {
+        if (document.querySelector(".selectedFolder")) {
+            document.querySelector(".selectedFolder").classList.remove('selectedFolder');
+        }
+    }
+
+    //onload
+    window.addEventListener("load", function() {
+        document.querySelector(".refreshButton").addEventListener("click", event => {
+            generateFolders();
+        });
+
+        let newFolderModal = "";
+        document.querySelector(".addFolderButton").addEventListener("click", event => {
+            newFolderModal = new bootstrap.Modal(document.querySelector("#newFolder"));
+            newFolderModal.show();
+        });
+
+        document.querySelector("#newFolderSubmit").addEventListener("click", event => {
+            let data = document.querySelector("#newFolderName").value;
+
+            axios.post('{{ env('BASE_URL') }}/api/create-folder', {
+                path: currentPath,
+                newName: data
+            })
+            .then(function (response) {
+                if (response.data.apiResponse.status == "success") {
+                    genFlashMessage("Folder created successfully.", "success", 5000);
+                    generateFolders();
+                    newFolderModal.hide();
+                    document.querySelector("#newFolderName").value = "";
+                } else {
+                    genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
+                }
+            })
+            .catch(function (error) {
+                genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
+            });
+        });
+
+        document.querySelector("#confirmPahtRun").addEventListener("click", event => {
+            document.querySelector(".folderPathSelect").innerText = currentPath;
+            document.querySelector(".folderPathSubmitValue").value = currentPath;
+            let modal = new bootstrap.Modal(document.querySelector("#confirmPathModal"));
+            modal.show();
+        });
+    });
+    
+</script>
+
+
+<style>
+    .refreshButton, .addFolderButton, .uploadButton {
+        font-size: 1.6em;
+        transition: 0.3s;
+        color: #0d6efd;
+    }
+
+    .refreshButton:hover, .addFolderButton:hover, .uploadButton:hover {
+        color: #0849aa;
+        cursor: pointer;
+    }
+
+    .folderDataFolder, .folderDataFile {
+        transition: 0.3s;
+        border: none;
+    }
+
+    .folderDataFolder:hover, .folderDataFile:hover  {
+        background-color: #d1e7ff;
+        cursor: pointer;
+    }
+    .selectedFolder {
+        background-color: #73b6ff !important;
+    }
+    .folderName {
+        padding: 0;
+    }
+    .folderPathSelect {
+        white-space: unset !important;
+        text-align: left;
+        font-weight: 200;
+        line-height: 1.5;
+    }
+</style>
+
+@include ("/partials/footer")

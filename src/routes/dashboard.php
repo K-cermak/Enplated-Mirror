@@ -366,9 +366,11 @@
         redirectNotLogin();
         redirectIfNotAdmin();
 
-        //continue
-    });
+        $drives = modelCall('drives', 'getAllDrives', ['db' => getDatabaseEnvConn('sqlite')]);
 
+        $template = processTemplate("drives", ["pageTitle" => "Drives", "drives" => $drives]);
+        finishRender($template);
+    });
 
     checkRoute('GET', '/dashboard/account' , function() {
         redirectNotLogin();

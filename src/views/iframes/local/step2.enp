@@ -1,0 +1,178 @@
+@include ("partials/head-iframe")
+
+@php
+    if (isset($_POST["path"]) && !empty($_POST["path"])) {
+        $path = $_POST["path"];
+        $_SESSION["api-selectedPath"] = $path;
+        echo "<script>var selectedPath = '".$path."';</script>";
+        echo "<div class='output'></div>";
+    } else {
+        echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?local&1'>step 1</a> and try again.</p>";
+    }
+@endphp
+
+<script>
+    document.querySelector(".output").innerHTML += "<p>Verification will begin shortly, please do not refresh the page...</p>";
+    document.querySelector(".output").innerHTML = "<p>Selected path: <strong>" + selectedPath + "</strong></p>";
+    var allowedNext = true;
+    var output = document.querySelector(".output");
+
+    setTimeout(function() {
+        checkIfExist();
+    }, 1000);
+
+
+    function checkIfExist() {
+        if (allowedNext == true) {
+            document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the existing folder...</p>";
+            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+                path: selectedPath,
+                type: "exist"
+            })
+            .then(function (response) {
+                if (response.data.apiResponse.status == "success") {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the existing folder... <span class='text-success'>OK</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    setTimeout(function() {
+                        checkIfWrite();
+                    }, 1000);
+                } else {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the existing folder... <span class='text-danger'>Error</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    printError();
+                }
+            })
+            .catch(function (error) {
+                output.querySelector(".lastWrite").innerHTML = "Verification of the existing folder... <span class='text-danger'>Error</span>";
+                document.querySelector(".lastWrite").classList.remove("lastWrite");
+                printError();
+            });
+        }
+    }
+
+    function checkIfWrite() {
+        if (allowedNext == true) {
+            document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the write permissions...</p>";
+            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+                path: selectedPath,
+                type: "write"
+            })
+            .then(function (response) {
+                if (response.data.apiResponse.status == "success") {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the write permissions... <span class='text-success'>OK</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    setTimeout(function() {
+                        checkIfRead();
+                    }, 1000);
+                } else {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the write permissions... <span class='text-danger'>Error</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    printError();
+                }
+            })
+            .catch(function (error) {
+                output.querySelector(".lastWrite").innerHTML = "Verification of the write permissions... <span class='text-danger'>Error</span>";
+                document.querySelector(".lastWrite").classList.remove("lastWrite");
+                printError();
+            });
+        }
+    }
+
+    function checkIfRead() {
+        if (allowedNext == true) {
+            document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the read permissions...</p>";
+            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+                path: selectedPath,
+                type: "read"
+            })
+            .then(function (response) {
+                if (response.data.apiResponse.status == "success") {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the read permissions... <span class='text-success'>OK</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    setTimeout(function() {
+                        checkIfDelete();
+                    }, 1000);
+                } else {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the read permissions... <span class='text-danger'>Error</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    printError();
+                }
+            })
+            .catch(function (error) {
+                output.querySelector(".lastWrite").innerHTML = "Verification of the read permissions... <span class='text-danger'>Error</span>";
+                document.querySelector(".lastWrite").classList.remove("lastWrite");
+                printError();
+            });
+        }
+    }
+
+    function checkIfDelete() {
+        if (allowedNext == true) {
+            document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the delete permissions...</p>";
+            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+                path: selectedPath,
+                type: "delete"
+            })
+            .then(function (response) {
+                if (response.data.apiResponse.status == "success") {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the delete permissions... <span class='text-success'>OK</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    setTimeout(function() {
+                        checkIfHtaccess();
+                    }, 1000);
+                } else {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the delete permissions... <span class='text-danger'>Error</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    printError();
+                }
+            })
+            .catch(function (error) {
+                output.querySelector(".lastWrite").innerHTML = "Verification of the delete permissions... <span class='text-danger'>Error</span>";
+                document.querySelector(".lastWrite").classList.remove("lastWrite");
+                printError();
+            });
+        }
+    }
+
+    function checkIfHtaccess() {
+        if (allowedNext == true) {
+            document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the .htaccess file...</p>";
+            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+                path: selectedPath,
+                type: "htaccess"
+            })
+            .then(function (response) {
+                if (response.data.apiResponse.status == "success") {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the .htaccess file... <span class='text-success'>OK</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    finishWrite();
+                } else {
+                    output.querySelector(".lastWrite").innerHTML = "Verification of the .htaccess file... <span class='text-danger'>Error</span>";
+                    document.querySelector(".lastWrite").classList.remove("lastWrite");
+                    printErrorHtaccess();
+                }
+            })
+            .catch(function (error) {
+                output.querySelector(".lastWrite").innerHTML = "Verification of the .htaccess file... <span class='text-danger'>Error</span>";
+                document.querySelector(".lastWrite").classList.remove("lastWrite");
+                printErrorHtaccess();
+            });
+        }
+    }
+
+
+    function printError() {
+        document.querySelector(".output").innerHTML += "<p>Verification failed in that folder. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1'go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&2'here</a> and the path will still be used, even though it may cause problems in the application.</p>";
+    }
+
+    function printErrorHtaccess() {
+        document.querySelector(".output").innerHTML += "<p>The .htaccess file is located in this folder. This can cause problems with access from the web. If you want to use the Enplated CDN project as a shared folder, please select the .../cdn-data folder from the main Enplated CDN directory, this folder is accessible without restrictions. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1'>go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3'>here</a> and the path will still be used, even though it may cause problems in the application.</p>";
+    }
+
+    function finishWrite() {
+        document.querySelector(".output").innerHTML += "<p>Verification completed successfully.</p>";
+        document.querySelector(".output").innerHTML += "<p>Now you can <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3'>continue</a> to the next step.</p>";
+    }
+</script>
+
+@include ("/partials/footer")

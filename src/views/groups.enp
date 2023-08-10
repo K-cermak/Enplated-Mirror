@@ -92,7 +92,7 @@
                     </div>
 
                     <div class="text-center text-lg-start mt-4 pt-2">
-                        <button type="submit" class="btn btn-primary px-5">Create a new group</button>
+                        <button type="submit" class="btn btn-primary px-5">Create a New Group</button>
                     </div>
                 </form>
             </div>

@@ -1,0 +1,14 @@
+@include ("partials/head-iframe")
+
+<div class="row mx-auto my-2 justify-content-center mt-5">
+    <div class="card text-center" style="width: 18rem;">
+        <i class="bi bi-database-fill-add mt-3" style="font-size:3em;"></i>
+        <div class="card-body">
+            <h5 class="card-title">New Local Folder</h5>
+            <p class="card-text">Add a local folder (from server) as a sharing location.</p>
+            <a href="{{ env('BASE_URL') }}/iframes/new-drive?local&1" class="btn btn-primary stretched-link">Add a Local Folder</a>
+        </div>
+    </div>
+</div>
+
+@include ("/partials/footer")

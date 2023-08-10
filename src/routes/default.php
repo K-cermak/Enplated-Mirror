@@ -1,5 +1,6 @@
 <?php
     registerRoutesFile(__DIR__ . '/dashboard.php');
+    registerRoutesFile(__DIR__ . '/api.php');
     registerRoutesFile(__DIR__ . '/login.php');
     registerRoutesFile(__DIR__ . '/main.php');
 
