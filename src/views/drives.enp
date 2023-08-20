@@ -78,15 +78,30 @@
             <div class="modal-body">
                 <form action="{{ env("BASE_URL") }}/dashboard/drives?managePrivileges" method="POST">
                     <input type="hidden" name="groupId" id="selectedDrive" value="">
-                    <p>Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum.</p>
 
-                    <div class="groupPlace">
-                        
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHelp" aria-expanded="false" aria-controls="collapseHelp">How to set privileges?</button>
+                            </h2>
+
+                            <div id="collapseHelp" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <p>By default, disk access is not allowed for any group (i.e. only administrators can access the disk).</p>
+                                    <p>If you want to allow a group read-only access, set this permission <code><i class="bi bi-bookmark-check"></i></code>. If you want to allow write access, select this permission <code><i class="bi bi-pencil"></i></code>.</p>
+                                    <p>However, if you want to restrict the group, you can go to repressive policies.</p>
+                                    <p>Setting this permission <code><i class="bi bi-eyeglasses"></i></code> will restrict group members from being able to write to the disk (i.e., they still need to be in a group that has at least read permissions to read, but even if they have permissions set in another group to write, they will not be allowed to write).</p>
+                                    <p>This permission <code><i class="bi bi-slash-circle"></i></code> restricts access to the disk, even if the user is in another group that has write access.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
+                    <div class="groupPlace"></div>
+
                     <div class="text-center text-lg-start mt-4 pt-2 d-flex justify-content-between">
-                        <button type="submit" class="btn btn-primary px-3">Save changes</button>
                         <button type="reset" class="btn btn-secondary px-3 reset">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-3">Save changes</button>
                     </div>
                 </form>
             </div>
@@ -120,13 +135,41 @@
                 })
                 .then(function (response) {
                     console.log(response.data);
-                    
-                    //continue
+                                        
+                    let allGroups = JSON.parse(response.data.apiResponse.allGroups);
                     let privileges = JSON.parse(response.data.apiResponse.privileges);
+                    let groupPlace = document.querySelector(".groupPlace");
+                    groupPlace.innerHTML = "";
 
-                    console.log(JSON.parse(response.data.apiResponse.privileges))
-                    console.log(JSON.parse(response.data.apiResponse.allGroups))
+                    console.log(allGroups);
+                    console.log(privileges);
 
+                    for (let i = 0; i < allGroups.length; i++) {
+                        groupPlace.innerHTML +=
+                        `<div class='d-flex justify-content-center align-items-center my-3'><span>` + allGroups[i].groupName + `</span>
+                            <div class="tw-toggle ms-3" id="groupId-` + allGroups[i].id + `">
+                                <input type="radio" name="grp-`+i+`" value="-2">
+                                <label class="toggle"><i class="bi bi-slash-circle"></i></label>
+
+                                <input type="radio" name="grp-`+i+`" value="-1">
+                                <label class="toggle"><i class="bi bi-eyeglasses"></i></label>
+
+                                <input type="radio" name="grp-`+i+`" value="none" checked>
+                                <label class="toggle"><i class="bi bi-dash"></i></label>
+
+                                <input type="radio" name="grp-`+i+`" value="1">
+                                <label class="toggle"><i class="bi bi-bookmark-check"></i></label>
+
+                                <input type="radio" name="grp-`+i+`" value="2">
+                                <label class="toggle"><i class="bi bi-pencil"></i></label>
+                                <span></span>  
+                        </div></div>`;
+                    }
+
+                    for (let i = 0; i < privileges.length; i++) {
+                        document.querySelector("#groupId-" + privileges[i].groupId + " input[value='" + privileges[i].privilegeLevel + "']").checked = true;
+                    }
+                    
                     setupPrivilegesModal = new bootstrap.Modal(document.querySelector("#managePrivileges"));
                     setupPrivilegesModal.show();
                 })
@@ -153,7 +196,7 @@
         display: inline-block;
         padding: 2px 3px;
         border-radius: 20px;
-        position:relative;
+        position: relative;
         border: 2px solid #95A5A6;
     }
     .tw-toggle label {
@@ -165,45 +208,46 @@
         margin: 0;
         text-align: center;
         padding: 2px 3px;
-        font-size: 0.8em;
+        font-size: 1.2em;
     }
     .tw-toggle input {
         position: absolute;
         z-index: 3;
         opacity: 0;
         cursor: pointer;
+        height: 100%;
+        width: 20%;
     }
     .tw-toggle span {
-        height: 21px;
-        width: 21px;
+        height: 29px;
+        width: 29px;
         line-height: 21px;
         border-radius: 50%;
         background:#fff;
         display: block;
         position: absolute;
-        left: 22px;
-        top: 1px;
+        top: 3px;
         transition: all 0.3s ease-in-out;
     }
     .tw-toggle input[value="-2"]:checked ~ span{
         background:#bc3829;
-        left: 2px;
+        left: 1.2px;
     }
     .tw-toggle input[value="-1"]:checked ~ span{
         background:#b24336;
-        left: 24.5px;
+        left: 30px;
     }
     .tw-toggle input[value="none"]:checked ~ span{
         background:#576eef;
-        left: 47px;
+        left: 58px;
     }
     .tw-toggle input[value="1"]:checked ~ span{
         background:#27ae60;
-        left: 70px;
+        left: 89px;
     }
     .tw-toggle input[value="2"]:checked ~ span{
         background:#0e5c2f;
-        left: 93px;
+        left: 117px;
     }
     .tw-toggle input[value="-2"]:checked + label, .tw-toggle input[value="-1"]:checked + label, .tw-toggle input[value="none"]:checked + label, .tw-toggle input[value="1"]:checked + label, .tw-toggle input[value="2"]:checked + label {
         color: #fff;

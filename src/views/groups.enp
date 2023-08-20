@@ -145,8 +145,8 @@
                     @endforeach
                     
                     <div class="text-center text-lg-start mt-4 pt-2 d-flex justify-content-between">
-                        <button type="submit" class="btn btn-primary px-3">Save changes</button>
                         <button type="reset" class="btn btn-secondary px-3 reset">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-3">Save changes</button>
                     </div>
                 </form>
             </div>
