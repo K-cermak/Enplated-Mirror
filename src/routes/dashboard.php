@@ -379,11 +379,50 @@
         redirectNotLogin();
         redirectIfNotAdmin();
 
+        $error = "";
+        $success = "";
+
         //todo
+        if (isset($_GET["managePrivileges"])) {
+            do {
+                //get all groups and check if in post
+                $groups = modelCall('groups', 'getAllGroups', ['db' => getDatabaseEnvConn('sqlite')]);
+
+                if (!isset($_POST["selectedDrive"]) || empty($_POST["selectedDrive"])) {
+                    $error = "No drive selected.";
+                    break;
+                }
+
+                //check if drive exist
+                $driveId = $_POST["selectedDrive"];
+                $result = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
+                if ($result == false) {
+                    $error = "Drive does not exist.";
+                    break;
+                }
+
+
+                for ($i = 0; $i < count($groups); $i++) {
+                    if (isset($_POST["grp-" . $groups[$i]["id"]])) {
+                        $grpId = $groups[$i]["id"];
+                        $grpVal = $_POST["grp-" . $groups[$i]["id"]];
+
+                        if ($grpVal === "none") {
+                            modelCall('privileges', 'removePrivilege', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId, "groupId" => $grpId]);
+                        } else if ($grpVal == "-2" || $grpVal == "-1" || $grpVal == "1" || $grpVal == "2") {
+                            modelCall('privileges', 'setPrivilege', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId, "groupId" => $grpId, "privilegeLevel" => $grpVal]);
+                        }
+                    }
+                }
+
+                $success = "All changes saved.";
+
+            } while (false);
+        }
 
         $drives = modelCall('drives', 'getAllDrives', ['db' => getDatabaseEnvConn('sqlite')]);
 
-        $template = processTemplate("drives", ["pageTitle" => "Drives", "drives" => $drives]);
+        $template = processTemplate("drives", ["pageTitle" => "Drives", "drives" => $drives, "error" => $error, "success" => $success]);
         finishRender($template);
     });
 

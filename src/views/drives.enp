@@ -5,6 +5,23 @@
     <h1>Drives</h1>
     <button class="btn btn-primary mt-2" id="newDriveRun"><i class="bi bi-database-fill-add"></i> Create a New Drive</button>
 
+    @if (isset($error) && $error != "")
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Error:</strong> {{ $error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    @if (isset($success) && $success != "")
+        <div class="container">
+            <div class="alert alert-success alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Success:</strong> {{ $success }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
 
     <div class="container my-5">
         <div class="accordion" id="drivesList">
@@ -77,7 +94,7 @@
             </div>
             <div class="modal-body">
                 <form action="{{ env("BASE_URL") }}/dashboard/drives?managePrivileges" method="POST">
-                    <input type="hidden" name="groupId" id="selectedDrive" value="">
+                    <input type="hidden" name="selectedDrive" id="selectedDrive" value="">
 
                     <div class="accordion">
                         <div class="accordion-item">
@@ -91,7 +108,7 @@
                                     <p>If you want to allow a group read-only access, set this permission <code><i class="bi bi-bookmark-check"></i></code>. If you want to allow write access, select this permission <code><i class="bi bi-pencil"></i></code>.</p>
                                     <p>However, if you want to restrict the group, you can go to repressive policies.</p>
                                     <p>Setting this permission <code><i class="bi bi-eyeglasses"></i></code> will restrict group members from being able to write to the disk (i.e., they still need to be in a group that has at least read permissions to read, but even if they have permissions set in another group to write, they will not be allowed to write).</p>
-                                    <p>This permission <code><i class="bi bi-slash-circle"></i></code> restricts access to the disk, even if the user is in another group that has write access.</p>
+                                    <p>This permission <code><i class="bi bi-slash-circle"></i></code> restricts access to the disk, even if the user is in another group that has access.</p>
                                 </div>
                             </div>
                         </div>
@@ -148,19 +165,19 @@
                         groupPlace.innerHTML +=
                         `<div class='d-flex justify-content-center align-items-center my-3'><span>` + allGroups[i].groupName + `</span>
                             <div class="tw-toggle ms-3" id="groupId-` + allGroups[i].id + `">
-                                <input type="radio" name="grp-`+i+`" value="-2">
+                                <input type="radio" name="grp-`+allGroups[i].id+`" value="-2">
                                 <label class="toggle"><i class="bi bi-slash-circle"></i></label>
 
-                                <input type="radio" name="grp-`+i+`" value="-1">
+                                <input type="radio" name="grp-`+allGroups[i].id+`" value="-1">
                                 <label class="toggle"><i class="bi bi-eyeglasses"></i></label>
 
-                                <input type="radio" name="grp-`+i+`" value="none" checked>
+                                <input type="radio" name="grp-`+allGroups[i].id+`" value="none" checked>
                                 <label class="toggle"><i class="bi bi-dash"></i></label>
 
-                                <input type="radio" name="grp-`+i+`" value="1">
+                                <input type="radio" name="grp-`+allGroups[i].id+`" value="1">
                                 <label class="toggle"><i class="bi bi-bookmark-check"></i></label>
 
-                                <input type="radio" name="grp-`+i+`" value="2">
+                                <input type="radio" name="grp-`+allGroups[i].id+`" value="2">
                                 <label class="toggle"><i class="bi bi-pencil"></i></label>
                                 <span></span>  
                         </div></div>`;
@@ -231,15 +248,15 @@
     }
     .tw-toggle input[value="-2"]:checked ~ span{
         background:#bc3829;
-        left: 1.2px;
+        left: 1.4px;
     }
     .tw-toggle input[value="-1"]:checked ~ span{
         background:#b24336;
-        left: 30px;
+        left: 31px;
     }
     .tw-toggle input[value="none"]:checked ~ span{
         background:#576eef;
-        left: 58px;
+        left: 59px;
     }
     .tw-toggle input[value="1"]:checked ~ span{
         background:#27ae60;
