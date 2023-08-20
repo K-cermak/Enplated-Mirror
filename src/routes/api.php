@@ -312,6 +312,40 @@
         }
     });
 
+    checkRoute('POST', '/api/folders/change', function() {
+        redirectNotLogin();
+        redirectIfNotAdmin();
+        
+        $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
+
+        if (isset($_POST["driveId"]) && !empty($_POST["driveId"])) {
+            //check if drive exists
+            $driveExist = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $_POST["driveId"]]);
+            if (!$driveExist) {
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Drive does not exist'
+                    ]
+                ], 'json');
+            }
+
+            $driveCredentials = json_encode([
+                "type" => "local",
+                "path" => $_SESSION["api-selectedPath"]
+            ]);
+
+            modelCall('drives', 'updateDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $_POST["driveId"], "driveCredentials" => $driveCredentials]);
+            resourceView([
+                'apiResponse' => [
+                    'status' => 'success',
+                    'message' => 'Folder changed'
+                ]
+            ], 'json');
+            
+        }
+    });
+
     checkRoute('POST', '/api/privileges/getInfo', function() {
         redirectNotLogin();
         redirectIfNotAdmin();

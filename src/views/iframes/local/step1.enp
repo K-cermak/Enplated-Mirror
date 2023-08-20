@@ -53,7 +53,11 @@
                 <p class="folderPathSelect badge bg-secondary"></p>
 
                 <div class="text-center text-lg-start mt-4 pt-2">
-                    <form action="{{ env('BASE_URL') }}/iframes/new-drive?local&2" method="POST">
+                    @if (isset($_GET['selectOnly']))
+                        <form action="{{ env('BASE_URL') }}/iframes/new-drive?local&2&selectOnly" method="POST">
+                    @else
+                        <form action="{{ env('BASE_URL') }}/iframes/new-drive?local&2" method="POST">
+                    @endif
                         <input type="hidden" class="folderPathSubmitValue" name="path" value="">
                         <button type="submit "class="btn btn-primary px-5" id="confirmPathButton">Confirm</button>
                     </form>

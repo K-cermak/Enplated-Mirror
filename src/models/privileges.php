@@ -7,12 +7,6 @@
         return $result;
     }
 
-    function removeAllPrivilegesWithGroup($db, $groupId) {
-        $stmt = $db->prepare("DELETE FROM drivesPrivileges WHERE groupId = :groupId");
-        $stmt->bindParam(':groupId', $groupId);
-        $stmt->execute();
-    }
-
     function setPrivilege($db, $driveId, $groupId, $privilegeLevel) {
         $stmt = $db->prepare("INSERT OR IGNORE INTO drivesPrivileges (driveId, groupId, privilegeLevel) VALUES (:driveId, :groupId, :privilegeLevel) ON CONFLICT(driveId, groupId) DO UPDATE SET privilegeLevel = :privilegeLevel");
         $stmt->bindParam(':driveId', $driveId);
@@ -25,6 +19,18 @@
         $stmt = $db->prepare("DELETE FROM drivesPrivileges WHERE driveId = :driveId AND groupId = :groupId");
         $stmt->bindParam(':driveId', $driveId);
         $stmt->bindParam(':groupId', $groupId);
+        $stmt->execute();
+    }
+
+    function removeAllPrivilegesWithGroup($db, $groupId) {
+        $stmt = $db->prepare("DELETE FROM drivesPrivileges WHERE groupId = :groupId");
+        $stmt->bindParam(':groupId', $groupId);
+        $stmt->execute();
+    }
+
+    function removePrivilegeWithDrive($db, $driveId) {
+        $stmt = $db->prepare("DELETE FROM drivesPrivileges WHERE driveId = :driveId");
+        $stmt->bindParam(':driveId', $driveId);
         $stmt->execute();
     }
 ?>

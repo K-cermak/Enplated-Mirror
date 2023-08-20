@@ -382,7 +382,38 @@
         $error = "";
         $success = "";
 
-        //todo
+        if (isset($_GET["changeName"]) && isset($_POST["driveId"]) && !empty($_POST["driveId"]) && isset($_POST["newName"]) && !empty($_POST["newName"])) {
+            do {
+                $newName = $_POST["newName"];
+                $driveId = $_POST["driveId"];
+
+                //check if name does not exist
+                $result = modelCall('drives', 'checkIfNameNotUsed', ['db' => getDatabaseEnvConn('sqlite'), "driveName" => $newName]);
+                if ($result != false) {
+                    $error = "Drive name already exist or nothing to change.";
+                    break;
+                }
+
+                //check if drive exist
+                $result = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
+                if ($result == false) {
+                    $error = "Drive does not exist.";
+                    break;
+                }
+
+                //check if at least 3 chars and max 20 chars
+                if (!preg_match('/^[a-zA-Z0-9_-]{3,20}$/', $newName)) {
+                    $error = "Drive name must be at least 3 characters and maximum 20 characters long and can only contain letters, numbers, underscores and dashes.";
+                    break;
+                }
+
+                //update
+                modelCall('drives', 'renameDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId, "driveName" => $newName]);
+                $success = "Drive name changed succesfully.";
+
+            } while (false);
+        }
+
         if (isset($_GET["managePrivileges"])) {
             do {
                 //get all groups and check if in post
@@ -416,6 +447,27 @@
                 }
 
                 $success = "All changes saved.";
+
+            } while (false);
+        }
+
+        if (isset($_GET["deleteDrive"]) && isset($_POST["driveId"]) && !empty($_POST["driveId"])) {
+            do {
+                $driveId = $_POST["driveId"];
+
+                //check if drive exist
+                $result = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
+                if ($result == false) {
+                    $error = "Drive does not exist.";
+                    break;
+                }
+
+                //delete all privileges
+                modelCall('privileges', 'removePrivilegeWithDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
+
+                //delete drive
+                modelCall('drives', 'deleteDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
+                $success = "Drive deleted succesfully.";
 
             } while (false);
         }

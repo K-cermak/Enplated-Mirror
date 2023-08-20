@@ -7,7 +7,17 @@
         echo "<script>var selectedPath = '".$path."';</script>";
         echo "<div class='output'></div>";
     } else {
-        echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?local&1'>step 1</a> and try again.</p>";
+        if (isset($_GET["selectOnly"])) {
+            echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?local&1&selectOnly'>step 1</a> and try again.</p>";
+        } else {
+            echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?local&1'>step 1</a> and try again.</p>";
+        }
+    }
+
+    if (isset($_GET["selectOnly"])) {
+        echo "<script>var urlEnd = '&selectOnly';</script>";
+    } else {
+        echo "<script>var urlEnd = '';</script>";
     }
 @endphp
 
@@ -162,16 +172,16 @@
 
 
     function printError() {
-        document.querySelector(".output").innerHTML += "<p>Verification failed in that folder. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1'go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&2'here</a> and the path will still be used, even though it may cause problems in the application.</p>";
+        document.querySelector(".output").innerHTML += "<p>Verification failed in that folder. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1"+urlEnd+"'go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&2"+urlEnd+"'here</a> and the path will still be used, even though it may cause problems in the application.</p>";
     }
 
     function printErrorHtaccess() {
-        document.querySelector(".output").innerHTML += "<p>The .htaccess file is located in this folder. This can cause problems with access from the web. If you want to use the Enplated CDN project as a shared folder, please select the .../cdn-data folder from the main Enplated CDN directory, this folder is accessible without restrictions. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1'>go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3'>here</a> and the path will still be used, even though it may cause problems in the application.</p>";
+        document.querySelector(".output").innerHTML += "<p>The .htaccess file is located in this folder. This can cause problems with access from the web. If you want to use the Enplated CDN project as a shared folder, please select the .../cdn-data folder from the main Enplated CDN directory, this folder is accessible without restrictions. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1"+urlEnd+"'>go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3"+urlEnd+"'>here</a> and the path will still be used, even though it may cause problems in the application.</p>";
     }
 
     function finishWrite() {
         document.querySelector(".output").innerHTML += "<p>Verification completed successfully.</p>";
-        document.querySelector(".output").innerHTML += "<p>Now you can <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3'>continue</a> to the next step.</p>";
+        document.querySelector(".output").innerHTML += "<p>Now you can <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3"+urlEnd+"'>continue</a> to the next step.</p>";
     }
 </script>
 

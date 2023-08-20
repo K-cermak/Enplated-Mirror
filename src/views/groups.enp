@@ -67,7 +67,7 @@
                             <div class="d-flex justify-content-center">
                                 <button class="btn btn-secondary m-2 manageUsersRun" dataId="{{ $group["id"] }}" dataUsers="{{ $userString }}"><i class="bi bi-people"></i> Manage Users</button>
                                 <button class="btn btn-primary m-2 changeNameRun" dataId="{{ $group["id"] }}"><i class="bi bi-pencil-square"></i> Change Name</button>
-                                <button class="btn btn-danger m-2 resetPasswordRun" dataId="{{ $group["id"] }}"><i class="bi bi-person-fill-lock"></i> Delete Group</button>
+                                <button class="btn btn-danger m-2 resetPasswordRun" dataId="{{ $group["id"] }}"><i class="bi bi-trash"></i> Delete Group</button>
                             </div>
                         </div>
                     </div>
@@ -209,11 +209,11 @@
         //CHANGE NAME
         document.querySelectorAll(".changeNameRun").forEach(function(element) {
             element.addEventListener("click", function() {
-                var modal = new bootstrap.Modal(document.querySelector("#changeName"));
-                modal.show();
-
                 document.querySelector("#groupIdChangeName").value = element.getAttribute("dataId");
                 document.querySelector("#renameName").value = element.parentElement.parentElement.parentElement.parentElement.querySelector(".currentName").innerHTML;
+
+                var modal = new bootstrap.Modal(document.querySelector("#changeName"));
+                modal.show();
             });
         });
 
