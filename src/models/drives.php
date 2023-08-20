@@ -21,4 +21,12 @@
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $result;
     }
+
+    function checkIfDriveExist($db, $driveId) {
+        $stmt = $db->prepare("SELECT id FROM drives WHERE id = :driveId");
+        $stmt->bindParam(':driveId', $driveId);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
 ?>

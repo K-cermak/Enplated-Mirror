@@ -18,9 +18,9 @@
 
     <h4 class="lead mt-5"><strong>Username:</strong> {{ $_SESSION["username"] }} <i class="bi bi-pencil-square text-primary iconPointer" id="changeNameRun"></i></h4>
     <h4 class="lead"><strong>Account type:</strong> 
-        @if ($_SESSION["privilageLevel"] == 1)
+        @if ($_SESSION["privilegeLevel"] == 1)
             <span class="badge bg-danger">Admin</span>
-        @elseif ($_SESSION["privilageLevel"] == 2)
+        @elseif ($_SESSION["privilegeLevel"] == 2)
             <span class="badge text-bg-info">User</span>
         @endif
     </h4>
@@ -36,7 +36,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                @if ($_SESSION["privilageLevel"] == 2)
+                @if ($_SESSION["privilegeLevel"] == 2)
                     <p>You cannot change your name. Please contact your admin to change it.</p>
                 @else
                     <form action="{{ env("BASE_URL") }}/dashboard/account?changeName" method="POST">

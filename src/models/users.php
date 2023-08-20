@@ -1,7 +1,7 @@
 <?php
     //LOGIN
     function verifyLogin($db, $username, $password) {
-        $stmt = $db->prepare("SELECT id, loginName, privilageLevel, password FROM users WHERE loginName = :username AND password = :password");
+        $stmt = $db->prepare("SELECT id, loginName, privilegeLevel, password FROM users WHERE loginName = :username AND password = :password");
         $stmt->bindParam(':username', $username);
         $stmt->bindParam(':password', $password);
         $stmt->execute();
@@ -15,10 +15,10 @@
         return $result;
     }
 
-    function verifyNothingChanged($db, $username, $privilageLevel, $passwordCheck) {
-        $stmt = $db->prepare("SELECT password FROM users WHERE loginName = :username AND privilageLevel = :privilageLevel");
+    function verifyNothingChanged($db, $username, $privilegeLevel, $passwordCheck) {
+        $stmt = $db->prepare("SELECT password FROM users WHERE loginName = :username AND privilegeLevel = :privilegeLevel");
         $stmt->bindParam(':username', $username);
-        $stmt->bindParam(':privilageLevel', $privilageLevel);
+        $stmt->bindParam(':privilegeLevel', $privilegeLevel);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($result === false) {
@@ -35,7 +35,7 @@
     }
 
     function getUsersInfo($db, $id) {
-        $stmt = $db->prepare("SELECT privilageLevel, registered, lastLogin FROM users WHERE id = :id");
+        $stmt = $db->prepare("SELECT privilegeLevel, registered, lastLogin FROM users WHERE id = :id");
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -51,25 +51,25 @@
 
     //USERS LISTING
     function getAllUsers($db) {
-        $stmt = $db->prepare("SELECT id, loginName, privilageLevel, registered, lastLogin FROM users");
+        $stmt = $db->prepare("SELECT id, loginName, privilegeLevel, registered, lastLogin FROM users");
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $result;
     }
 
-    function getUsersWithPrivilage($db, $privilageLevel) {
-        $stmt = $db->prepare("SELECT id, loginName FROM users WHERE privilageLevel = :privilageLevel");
-        $stmt->bindParam(':privilageLevel', $privilageLevel);
+    function getUsersWithPrivilege($db, $privilegeLevel) {
+        $stmt = $db->prepare("SELECT id, loginName FROM users WHERE privilegeLevel = :privilegeLevel");
+        $stmt->bindParam(':privilegeLevel', $privilegeLevel);
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $result;
     }
 
-    function createUser($db, $name, $password, $privilageLevel) {
-        $stmt = $db->prepare("INSERT INTO users (loginName, password, privilageLevel, registered, lastLogin) VALUES (:name, :password, :privilageLevel, datetime('now'), '2000-00-00 00:00:00')");
+    function createUser($db, $name, $password, $privilegeLevel) {
+        $stmt = $db->prepare("INSERT INTO users (loginName, password, privilegeLevel, registered, lastLogin) VALUES (:name, :password, :privilegeLevel, datetime('now'), '2000-00-00 00:00:00')");
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':password', $password);
-        $stmt->bindParam(':privilageLevel', $privilageLevel);
+        $stmt->bindParam(':privilegeLevel', $privilegeLevel);
         $stmt->execute();
     }
 
@@ -109,11 +109,11 @@
     }
 
 
-    //PRIVILAGE LEVEL
-    function changePrivilageLevel($db, $id, $newPrivilageLevel) {
-        $stmt = $db->prepare("UPDATE users SET privilageLevel = :newPrivilageLevel WHERE id = :id");
+    //PRIVILEGE LEVEL
+    function changeprivilegeLevel($db, $id, $newprivilegeLevel) {
+        $stmt = $db->prepare("UPDATE users SET privilegeLevel = :newprivilegeLevel WHERE id = :id");
         $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':newPrivilageLevel', $newPrivilageLevel);
+        $stmt->bindParam(':newprivilegeLevel', $newprivilegeLevel);
         $stmt->execute();
     }
 ?>

@@ -10,6 +10,28 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
         <link rel="stylesheet" href="{{ env('BASE_URL') }}/public/css/main.css">
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/K-cermak/Enplated-Framework@enp-v3/enp-data/flash.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/K-cermak/Enplated-Framework@enp-v3/enp-data/flash.min.css">
     </head>
 
 <body class="d-flex flex-column min-vh-100">
+
+<script>
+    function genFlashMessage(msg, type, time) {
+        let settings = {
+            progress: true,
+            interactive: true,
+            timeout: time,
+            container: '.flash-container',
+        };
+
+        if (type == 'success')
+            window.FlashMessage.success(msg, settings);
+        else if (type == 'error')
+            window.FlashMessage.error(msg, settings);
+        else if (type == 'warning')
+            window.FlashMessage.warning(msg, settings);
+        else if (type == 'info')
+            window.FlashMessage.info(msg, settings);
+    }
+</script>

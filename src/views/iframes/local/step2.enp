@@ -25,7 +25,7 @@
     function checkIfExist() {
         if (allowedNext == true) {
             document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the existing folder...</p>";
-            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+            axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 type: "exist"
             })
@@ -53,7 +53,7 @@
     function checkIfWrite() {
         if (allowedNext == true) {
             document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the write permissions...</p>";
-            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+            axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 type: "write"
             })
@@ -81,7 +81,7 @@
     function checkIfRead() {
         if (allowedNext == true) {
             document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the read permissions...</p>";
-            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+            axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 type: "read"
             })
@@ -109,7 +109,7 @@
     function checkIfDelete() {
         if (allowedNext == true) {
             document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the delete permissions...</p>";
-            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+            axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 type: "delete"
             })
@@ -137,7 +137,7 @@
     function checkIfHtaccess() {
         if (allowedNext == true) {
             document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the .htaccess file...</p>";
-            axios.post('{{ env('BASE_URL') }}/api/verification-folder', {
+            axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 type: "htaccess"
             })

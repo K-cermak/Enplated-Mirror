@@ -50,7 +50,7 @@
                 break;
             }
 
-            if ($result["privilageLevel"] == 0) {
+            if ($result["privilegeLevel"] == 0) {
                 $error = "You are not allowed to login, because your account has been disabled. Please contact the administrator.";
                 break;
             }
@@ -58,7 +58,7 @@
             modelCall('users', 'logLastLogin', ['db' => getDatabaseEnvConn('sqlite'), "id" => $result["id"]]);
             $_SESSION["userId"] = $result["id"];
             $_SESSION["username"] = $result["loginName"];
-            $_SESSION["privilageLevel"] = $result["privilageLevel"];
+            $_SESSION["privilegeLevel"] = $result["privilegeLevel"];
             $_SESSION["passwordCheck"] = $result["password"];
             $_SESSION["loginAttempts"] = 0;
             $_SESSION["lastAttempt"] = 0;

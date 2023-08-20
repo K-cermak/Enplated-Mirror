@@ -74,8 +74,7 @@
         finishRender($template);
     }
 
-
-    checkRoute('POST', '/api/folders' , function() {
+    checkRoute('POST', '/api/folders/check' , function() {
         redirectNotLogin();
         redirectIfNotAdmin();
 
@@ -126,7 +125,7 @@
         }
     });
 
-    checkRoute('POST', '/api/create-folder' , function() {
+    checkRoute('POST', '/api/folders/create' , function() {
         redirectNotLogin();
         redirectIfNotAdmin();
 
@@ -173,7 +172,7 @@
         }
     });
 
-    checkRoute('POST', '/api/verification-folder' , function() {
+    checkRoute('POST', '/api/folders/verification' , function() {
         redirectNotLogin();
         redirectIfNotAdmin();
         
@@ -310,6 +309,39 @@
                     ], 'json');
                 }
             }
+        }
+    });
+
+    checkRoute('POST', '/api/privileges/getInfo', function() {
+        redirectNotLogin();
+        redirectIfNotAdmin();
+        
+        $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
+
+        if (isset($_POST["driveId"]) && !empty($_POST["driveId"])) {
+            $driveId = $_POST["driveId"];
+
+            $driveExist = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
+            if (!$driveExist) {
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Drive does not exist'
+                    ]
+                ], 'json');
+            }
+
+            $privileges = modelCall('privileges', 'getPrivilegesForDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
+            $allGroups = modelCall('groups', 'getAllGroups', ['db' => getDatabaseEnvConn('sqlite')]);
+
+            resourceView([
+                'apiResponse' => [
+                    'status' => 'success',
+                    'message' => 'Privileges fetched successfully',
+                    'privileges' => json_encode($privileges),
+                    'allGroups' => json_encode($allGroups)
+                ]
+            ], 'json');
         }
     });
 ?>

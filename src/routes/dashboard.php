@@ -14,7 +14,7 @@
 
         $users = modelCall('users', 'getAllUsers', ['db' => getDatabaseEnvConn('sqlite')]);
         for ($i = 0; $i < count($users); $i++) {
-            if ($users[$i]["privilageLevel"] == 2 || $users[$i]["privilageLevel"] == 0) {
+            if ($users[$i]["privilegeLevel"] == 2 || $users[$i]["privilegeLevel"] == 0) {
                 $users[$i]["groups"] = modelCall('groups', 'getGroupsByUser', ['db' => getDatabaseEnvConn('sqlite'), "userId" => $users[$i]["id"]]);
             }
         }
@@ -30,11 +30,11 @@
         $error = "";
         $success = "";
 
-        if (isset($_GET["newUser"]) && isset($_POST["newName"]) && !empty($_POST["newName"]) && isset($_POST["newPassword"]) && !empty($_POST["newPassword"]) && isset($_POST["privilageLevel"]) && ($_POST["privilageLevel"] == "user" || $_POST["privilageLevel"] == "admin")) {
+        if (isset($_GET["newUser"]) && isset($_POST["newName"]) && !empty($_POST["newName"]) && isset($_POST["newPassword"]) && !empty($_POST["newPassword"]) && isset($_POST["privilegeLevel"]) && ($_POST["privilegeLevel"] == "user" || $_POST["privilegeLevel"] == "admin")) {
             do {
                 $newName = $_POST["newName"];
                 $newPassword = $_POST["newPassword"];
-                $privilageLevel = $_POST["privilageLevel"];
+                $privilegeLevel = $_POST["privilegeLevel"];
 
                 //check if name does not exist
                 $result = modelCall('users', 'checkIfUsernameExist', ['db' => getDatabaseEnvConn('sqlite'), "username" => $newName]);
@@ -61,14 +61,14 @@
                     break;
                 }
 
-                if ($privilageLevel == "user") {
-                    $privilageLevel = 2;
-                } else if ($privilageLevel == "admin") {
-                    $privilageLevel = 1;
+                if ($privilegeLevel == "user") {
+                    $privilegeLevel = 2;
+                } else if ($privilegeLevel == "admin") {
+                    $privilegeLevel = 1;
                 }
 
                 //create user
-                modelCall('users', 'createUser', ['db' => getDatabaseEnvConn('sqlite'), "name" => $newName, "password" => hash("sha256", $newPassword), "privilageLevel" => $privilageLevel]);
+                modelCall('users', 'createUser', ['db' => getDatabaseEnvConn('sqlite'), "name" => $newName, "password" => hash("sha256", $newPassword), "privilegeLevel" => $privilegeLevel]);
                 $success = "User created succesfully.";
 
             } while (false);
@@ -117,14 +117,14 @@
             } while (false);
         }
 
-        if (isset($_GET["changePrivilageLevel"]) && isset($_POST["userId"]) && !empty($_POST["userId"]) && isset($_POST["newPrivilageLevel"]) && ($_POST["newPrivilageLevel"] == "blocked" || $_POST["newPrivilageLevel"] == "admin" || $_POST["newPrivilageLevel"] == "user")) {
+        if (isset($_GET["changePrivilegeLevel"]) && isset($_POST["userId"]) && !empty($_POST["userId"]) && isset($_POST["newPrivilegeLevel"]) && ($_POST["newPrivilegeLevel"] == "blocked" || $_POST["newPrivilegeLevel"] == "admin" || $_POST["newPrivilegeLevel"] == "user")) {
             do {
                 $userId = $_POST["userId"];
-                $newPrivilageLevel = $_POST["newPrivilageLevel"];
+                $newPrivilegeLevel = $_POST["newPrivilegeLevel"];
 
                 //check if not logged user
                 if ($_SESSION["userId"] == $userId) {
-                    $error = "You are not allowed to change your privilage level.";
+                    $error = "You are not allowed to change your privilege level.";
                     break;
                 }
 
@@ -135,17 +135,17 @@
                     break;
                 }
 
-                if ($newPrivilageLevel == "blocked") {
-                    $newPrivilageLevel = 0;
-                } else if ($newPrivilageLevel == "user") {
-                    $newPrivilageLevel = 2;
-                } else if ($newPrivilageLevel == "admin") {
-                    $newPrivilageLevel = 1;
+                if ($newPrivilegeLevel == "blocked") {
+                    $newPrivilegeLevel = 0;
+                } else if ($newPrivilegeLevel == "user") {
+                    $newPrivilegeLevel = 2;
+                } else if ($newPrivilegeLevel == "admin") {
+                    $newPrivilegeLevel = 1;
                 }
 
                 //update
-                modelCall('users', 'changePrivilageLevel', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId, "newPrivilageLevel" => $newPrivilageLevel]);
-                $success = "Privilage level changed succesfully.";
+                modelCall('users', 'changePrivilegeLevel', ['db' => getDatabaseEnvConn('sqlite'), "id" => $userId, "newPrivilegeLevel" => $newPrivilegeLevel]);
+                $success = "Privilege level changed succesfully.";
 
             } while (false);
         }
@@ -190,7 +190,7 @@
 
         $users = modelCall('users', 'getAllUsers', ['db' => getDatabaseEnvConn('sqlite')]);
         for ($i = 0; $i < count($users); $i++) {
-            if ($users[$i]["privilageLevel"] == 2 || $users[$i]["privilageLevel"] == 0) {
+            if ($users[$i]["privilegeLevel"] == 2 || $users[$i]["privilegeLevel"] == 0) {
                 $users[$i]["groups"] = modelCall('groups', 'getGroupsByUser', ['db' => getDatabaseEnvConn('sqlite'), "userId" => $users[$i]["id"]]);
             }
         }
@@ -208,7 +208,7 @@
         for ($i = 0; $i < count($groups); $i++) {
             $groups[$i]["users"] = modelCall('groups', 'getUsernamesInGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groups[$i]["id"]]);
         }
-        $users = modelCall('users', 'getUsersWithPrivilage', ['db' => getDatabaseEnvConn('sqlite'), "privilageLevel" => 2]);
+        $users = modelCall('users', 'getUsersWithPrivilege', ['db' => getDatabaseEnvConn('sqlite'), "privilegeLevel" => 2]);
 
         $template = processTemplate("groups", ["pageTitle" => "Groups", "groups" => $groups, "users" => $users]);
         finishRender($template);
@@ -315,7 +315,7 @@
                         }
 
                         //check if user is not admin
-                        if ($result["privilageLevel"] == 1) {
+                        if ($result["privilegeLevel"] == 1) {
                             continue;
                         }
 
@@ -343,6 +343,9 @@
                 //remove all users from group
                 modelCall('groups', 'removeAllUsersFromGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groupId]);
 
+                //remove all privileges with this group
+                modelCall('privileges', 'removeAllPrivilegesWithGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groupId]);
+
                 //delete group
                 modelCall('groups', 'deleteGroup', ['db' => getDatabaseEnvConn('sqlite'), "id" => $groupId]);
                 $success = "Group deleted succesfully.";
@@ -355,7 +358,7 @@
         for ($i = 0; $i < count($groups); $i++) {
             $groups[$i]["users"] = modelCall('groups', 'getUsernamesInGroup', ['db' => getDatabaseEnvConn('sqlite'), "groupId" => $groups[$i]["id"]]);
         }
-        $users = modelCall('users', 'getUsersWithPrivilage', ['db' => getDatabaseEnvConn('sqlite'), "privilageLevel" => 2]);
+        $users = modelCall('users', 'getUsersWithPrivilege', ['db' => getDatabaseEnvConn('sqlite'), "privilegeLevel" => 2]);
 
         $template = processTemplate("groups", ["pageTitle" => "Groups", "groups" => $groups, "users" => $users, "error" => $error, "success" => $success]);
         finishRender($template);
@@ -365,6 +368,18 @@
     checkRoute('GET', '/dashboard/drives' , function() {
         redirectNotLogin();
         redirectIfNotAdmin();
+
+        $drives = modelCall('drives', 'getAllDrives', ['db' => getDatabaseEnvConn('sqlite')]);
+
+        $template = processTemplate("drives", ["pageTitle" => "Drives", "drives" => $drives]);
+        finishRender($template);
+    });
+
+    checkRoute('POST', '/dashboard/drives' , function() {
+        redirectNotLogin();
+        redirectIfNotAdmin();
+
+        //todo
 
         $drives = modelCall('drives', 'getAllDrives', ['db' => getDatabaseEnvConn('sqlite')]);
 
@@ -391,7 +406,7 @@
                 $newName = $_POST["newName"];
 
                 //check if user is admin
-                if ($_SESSION["privilageLevel"] != 1) {
+                if ($_SESSION["privilegeLevel"] != 1) {
                     $error = "You are not allowed to change your username.";
                     break;
                 }
@@ -485,7 +500,7 @@
             die();
         } else {
             //check if something changed in user account
-            $result = modelCall('users', 'verifyNothingChanged', ['db' => getDatabaseEnvConn('sqlite'), "username" => $_SESSION["username"], "privilageLevel" => $_SESSION["privilageLevel"], "passwordCheck" => $_SESSION["passwordCheck"]]);
+            $result = modelCall('users', 'verifyNothingChanged', ['db' => getDatabaseEnvConn('sqlite'), "username" => $_SESSION["username"], "privilegeLevel" => $_SESSION["privilegeLevel"], "passwordCheck" => $_SESSION["passwordCheck"]]);
             if ($result == false) {
                 session_destroy();
                 header('Location: ' . getAppEnvVar("BASE_URL") . "/" . getAppEnvVar("LOGIN_URL") . "?accountChanged");
@@ -495,7 +510,7 @@
     }
 
     function redirectIfNotAdmin() {
-        if ($_SESSION["privilageLevel"] != 1) {
+        if ($_SESSION["privilegeLevel"] != 1) {
             header('Location: ' . getAppEnvVar("BASE_URL") . "/dashboard");
             die();
         }

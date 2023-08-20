@@ -18,9 +18,9 @@
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordeon-{{ $drive["id"] }}" aria-expanded="false" aria-controls="accordeon-{{ $drive["id"] }}">
                             <strong>DriveName:&nbsp; </strong> <span class="currentName">{{ $drive["driveName"] }}</span> &nbsp;
                             @if ($driveCredentials["type"] == "local")
-                                <span class="badge ms-2 privilageBadge bg-danger">Local Drive</span>
+                                <span class="badge ms-2 privilegeBadge bg-danger">Local Drive</span>
                             @elseif ($driveCredentials["type"] == "ftp")
-                                <span class="badge ms-2 privilageBadge text-bg-info">FTP Drive</span>
+                                <span class="badge ms-2 privilegeBadge text-bg-info">FTP Drive</span>
                             @endif
 
                         </button>
@@ -36,11 +36,11 @@
                             <div class="d-flex justify-content-center">
                                 <button class="btn btn-primary m-2 changeNameRun" dataId="{{ $drive["id"] }}"><i class="bi bi-pencil-square"></i> Change Name</button>
                                 @if ($driveCredentials["type"] == "local")
-                                    <button class="btn btn-secondary m-2 changePrivilageRun" dataId="{{ $drive["id"] }}"><i class="bi bi-folder2-open"></i> Change Folder</button>
+                                    <button class="btn btn-secondary m-2 changeFolderRun" dataId="{{ $drive["id"] }}"><i class="bi bi-folder2-open"></i> Change Folder</button>
                                 @elseif ($driveCredentials["type"] == "ftp")
-                                    <p>Path: <span class="badge bg-secondary">todo..</span></p>
+                                    <p>todo..</span></p>
                                 @endif
-                                <button class="btn btn-danger m-2 resetPasswordRun" dataId="{{ $drive["id"] }}"><i class="bi bi-person-fill-lock"></i> Setup Privileges</button>
+                                <button class="btn btn-danger m-2 setupPrivilegesRun" dataId="{{ $drive["id"] }}"><i class="bi bi-person-fill-lock"></i> Setup Privileges</button>
                             </div>
                         </div>
                     </div>
@@ -68,6 +68,33 @@
     </div>
 </div>
 
+<div class="modal fade" tabindex="-1" id="managePrivileges">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Manage Privileges for Drive</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ env("BASE_URL") }}/dashboard/drives?managePrivileges" method="POST">
+                    <input type="hidden" name="groupId" id="selectedDrive" value="">
+                    <p>Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum. Lorem ipsum.</p>
+
+                    <div class="groupPlace">
+                        
+                    </div>
+
+                    <div class="text-center text-lg-start mt-4 pt-2 d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary px-3">Save changes</button>
+                        <button type="reset" class="btn btn-secondary px-3 reset">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
     window.addEventListener("load", function() {
         var mainModal = new bootstrap.Modal(document.querySelector("#newDrive"));
@@ -82,11 +109,106 @@
             }
         });
 
+        //SETUP PRivilegeS
+        let setupPrivilegesModal;
+        document.querySelectorAll(".setupPrivilegesRun").forEach(function(element) {
+            element.addEventListener("click", function() {
+                document.querySelector("#selectedDrive").value = element.getAttribute("dataId");
+
+                axios.post('{{ env('BASE_URL') }}/api/privileges/getInfo', {
+                    driveId : element.getAttribute("dataId")
+                })
+                .then(function (response) {
+                    console.log(response.data);
+                    
+                    //continue
+                    let privileges = JSON.parse(response.data.apiResponse.privileges);
+
+                    console.log(JSON.parse(response.data.apiResponse.privileges))
+                    console.log(JSON.parse(response.data.apiResponse.allGroups))
+
+                    setupPrivilegesModal = new bootstrap.Modal(document.querySelector("#managePrivileges"));
+                    setupPrivilegesModal.show();
+                })
+                .catch(function (error) {
+                    genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
+                });
+            });
+        });
+
+        document.querySelector("#managePrivileges .reset").addEventListener("click", function() {
+            setupPrivilegesModal.hide();
+        });
+
+
     });
 
     //remove all parameters from url
     window.history.replaceState('', '', window.location.pathname);
 </script>
+
+
+<style>
+    .tw-toggle {
+        display: inline-block;
+        padding: 2px 3px;
+        border-radius: 20px;
+        position:relative;
+        border: 2px solid #95A5A6;
+    }
+    .tw-toggle label {
+        text-align: center;
+        display: inline-block;
+        color: #95A5A6;
+        position: relative;
+        z-index: 2;
+        margin: 0;
+        text-align: center;
+        padding: 2px 3px;
+        font-size: 0.8em;
+    }
+    .tw-toggle input {
+        position: absolute;
+        z-index: 3;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .tw-toggle span {
+        height: 21px;
+        width: 21px;
+        line-height: 21px;
+        border-radius: 50%;
+        background:#fff;
+        display: block;
+        position: absolute;
+        left: 22px;
+        top: 1px;
+        transition: all 0.3s ease-in-out;
+    }
+    .tw-toggle input[value="-2"]:checked ~ span{
+        background:#bc3829;
+        left: 2px;
+    }
+    .tw-toggle input[value="-1"]:checked ~ span{
+        background:#b24336;
+        left: 24.5px;
+    }
+    .tw-toggle input[value="none"]:checked ~ span{
+        background:#576eef;
+        left: 47px;
+    }
+    .tw-toggle input[value="1"]:checked ~ span{
+        background:#27ae60;
+        left: 70px;
+    }
+    .tw-toggle input[value="2"]:checked ~ span{
+        background:#0e5c2f;
+        left: 93px;
+    }
+    .tw-toggle input[value="-2"]:checked + label, .tw-toggle input[value="-1"]:checked + label, .tw-toggle input[value="none"]:checked + label, .tw-toggle input[value="1"]:checked + label, .tw-toggle input[value="2"]:checked + label {
+        color: #fff;
+    }
+</style>
 
 
 @include ("partials/footer")
