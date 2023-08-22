@@ -378,4 +378,76 @@
             ], 'json');
         }
     });
+
+    checkRoute('POST', '/api/fileViewer/getContent', function() {
+        redirectNotLogin();
+
+        $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
+
+        if (isset($_POST["path"]) && !empty($_POST["path"])) {
+            $path = $_POST["path"];
+            $splitter = "/";
+
+            if ($path == "#drives#") {
+                $drives = modelCall("drives", "getDrivesWithAccess", []);
+
+                for ($i = 0; $i < count($drives); $i++) {
+                    if (isset($drives["accessLevel"]) && $drives["accessLevel"] == "none") {
+                        unset($drives[$i]);
+                        continue;
+                    }
+                    //delete driveCredentials
+                    unset($drives[$i]["driveCredentials"]);
+                }
+
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'success',
+                        'type' => 'drives',
+                        'data' => $drives
+                    ]
+                ], 'json');
+            }
+
+            //if running on windows, replace / with \
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                $splitter = "\\";
+                //get first 3 chars of __DIR__
+                $dir = substr(__DIR__, 0, 3);
+                if ($path == "/") {
+                    $path = $dir;
+                } else {
+                    //remove first char
+                    $path = substr($path, 1);
+                    $path = $dir . str_replace("/", "\\", $path);
+                }
+            }
+
+
+            /*$folders = scandir($path);
+
+            //check if folder
+            $folders = array_filter($folders, function($folder) use ($path, $splitter) {
+                return is_dir($path .  $splitter . $folder);
+            });
+            //remove . and ..
+            $folders = array_filter($folders, function($folder) {
+                return $folder != "." && $folder != "..";
+            });
+
+            //reset index of array
+            $folders = array_values($folders);*/
+
+            /*resourceView([
+                'apiResponse' => [
+                    'status' => 'success',
+                    'data' => $folders
+                ]
+            ], 'json');*/
+
+        } else {
+            require_once "engine/errors/403.php";
+            die();
+        }
+    });
 ?>

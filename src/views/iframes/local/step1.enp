@@ -206,13 +206,13 @@
 
 
 <style>
-    .refreshButton, .addFolderButton, .uploadButton {
+    .refreshButton, .addFolderButton {
         font-size: 1.6em;
         transition: 0.3s;
         color: #0d6efd;
     }
 
-    .refreshButton:hover, .addFolderButton:hover, .uploadButton:hover {
+    .refreshButton:hover, .addFolderButton:hover {
         color: #0849aa;
         cursor: pointer;
     }

@@ -7,6 +7,15 @@
         return $result;
     }
 
+    function getPrivilegesForGroupInDrive($db, $driveId, $groupId) {
+        $stmt = $db->prepare("SELECT privilegeLevel FROM drivesPrivileges WHERE driveId = :driveId AND groupId = :groupId");
+        $stmt->bindParam(':driveId', $driveId);
+        $stmt->bindParam(':groupId', $groupId);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
+
     function setPrivilege($db, $driveId, $groupId, $privilegeLevel) {
         $stmt = $db->prepare("INSERT OR IGNORE INTO drivesPrivileges (driveId, groupId, privilegeLevel) VALUES (:driveId, :groupId, :privilegeLevel) ON CONFLICT(driveId, groupId) DO UPDATE SET privilegeLevel = :privilegeLevel");
         $stmt->bindParam(':driveId', $driveId);

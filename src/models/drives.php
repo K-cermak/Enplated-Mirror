@@ -6,6 +6,7 @@
         return $result;
     }
 
+
 /**************************/
 
     function checkIfNameNotUsed($db, $driveName) {
@@ -23,6 +24,7 @@
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $result;
     }
+
 
 /**************************/
 
@@ -52,5 +54,55 @@
         $stmt = $db->prepare("DELETE FROM drives WHERE id = :driveId");
         $stmt->bindParam(':driveId', $driveId);
         $stmt->execute();
+    }
+
+
+/**************************/
+
+    function getDrivesWithAccess() {
+        $drives = modelCall("drives", "getAllDrives", ['db' => getDatabaseEnvConn('sqlite')]);
+
+        if ($_SESSION["privilegeLevel"] == 1) {
+            for ($i = 0; $i < count($drives); $i++) {
+                $drives[$i]["accessLevel"] = "edit";
+            }
+        } else if ($_SESSION["privilegeLevel"] == 2) {
+            //get in which user is in
+            $groups = modelCall("groups", "getGroupsByUser", ['db' => getDatabaseEnvConn('sqlite'), "userId" => $_SESSION["userId"]]);
+
+            foreach ($drives as $i=>$drive) {
+                $privilegeEdit = false;
+                $privilegeView = false;
+                $privilegeLimitToView = false;
+                $privilegeDisabled = false;
+
+                foreach ($groups as $group) {
+                    $privilege = modelCall("privileges", "getPrivilegesForGroupInDrive", ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $drive["id"], "groupId" => $group["id"]]);
+                    if ($privilege["privilegeLevel"] == "-2") {
+                        $privilegeDisabled = true;
+                    } else if ($privilege["privilegeLevel"] == "-1") {
+                        $privilegeLimitToView = true;
+                    } else if ($privilege["privilegeLevel"] == "1") {
+                        $privilegeView = true;
+                    } else if ($privilege["privilegeLevel"] == "2") {
+                        $privilegeEdit = true;
+                    }
+                }
+
+                if ($privilegeDisabled) {
+                    $drives[$i]["accessLevel"] = "none";
+                } else if ($privilegeLimitToView && ($privilegeView || $privilegeEdit)) {
+                    $drives[$i]["accessLevel"] = "view";
+                } else if ($privilegeEdit) {
+                    $drives[$i]["accessLevel"] = "edit";
+                } else if ($privilegeView) {
+                    $drives[$i]["accessLevel"] = "view";
+                } else {
+                    $drives[$i]["accessLevel"] = "none";
+                }
+            }
+        }
+
+        return $drives;
     }
 ?>

@@ -1,5 +1,212 @@
 @include ("partials/head")
 @include ("partials/header")
 
+<div class="card mainDrive">
+    <div class="card-body">
+        <div class="row card-title">
+            <div class="col-sm-9 mainPath"></div>
+            <div class="col-sm-3 text-end mt-1 toolbar">
+                <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
+                <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
+                <i class="bi bi-arrow-bar-left mt-2 mx-2 openNewPanel"></i>
+            </div>
+        </div>
+        <div>
+            <div class="row folders mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="newFolder">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Folder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="floating-label-group mt-3">
+                    <input type="text" id="newFolderName" name="newName" class="form-control" minlength="1" maxlength="20" placeholder=" " required>
+                    <label class="floating-label">Folder Name</label>
+                </div>
+
+                <div class="text-center text-lg-start mt-4 pt-2">
+                    <button class="btn btn-primary px-5" id="newFolderSubmit">Create a New Folder</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var currentPath = "#drives#";
+    var backupPath = "#drives#";
+    generateFolders();
+
+    function generateFolders() {
+        axios.post('{{ env('BASE_URL') }}/api/fileViewer/getContent', {
+            path: currentPath
+        })
+        .then(function (response) {
+            if (response.data.apiResponse.type == "drives") {
+                drives = response.data.apiResponse.data;
+
+                if (drives.length == 0) {
+                    document.querySelector(".folders").innerHTML = "<p class='text-center'>No drives found.</p>";
+                }
+                for (let i = 0; i < drives.length; i++) {
+                    let icon = "/public/icons/drive.svg";
+                    if (drives[i]["accessLevel"] == "view") {
+                        icon = "/public/icons/drive-viewonly.svg";
+                    }
+
+                    let data =
+                    `<div class="card text-center folderDataDrive m-1" style="width: 8rem;">
+                        <img class="card-img-top mx-auto" src="{{ env('BASE_URL') }}${icon}" alt="Folder icon" style="max-width:4rem;">
+                        <div class="card-body folderName">
+                            <h6>${drives[i]["driveName"]}</h6>
+                        </div>
+                    </div>`;
+                    document.querySelector(".folders").innerHTML += data;
+                }
+
+
+            } else {
+                /*document.querySelector(".folders").innerHTML = "";
+
+                let folders = response.data.apiResponse.data;
+                if (folders.length == 0) {
+                    document.querySelector(".folders").innerHTML = "<p class='text-center'>No folders found.</p>";
+                }
+                for (let i = 0; i < folders.length; i++) {
+                    let data =
+                    `<div class="card text-center folderDataFolder m-1" style="width: 8rem;">
+                        <img class="card-img-top mx-auto" src="{{ env('BASE_URL') }}/public/icons/folder.svg" alt="Folder icon" style="max-width:4rem;">
+                        <div class="card-body folderName">
+                            <h6>${folders[i]}</h6>
+                        </div>
+                    </div>`;
+
+                    document.querySelector(".folders").innerHTML += data;
+                }
+                selectFolder();
+                generatePath();
+                backupPath = currentPath;*/
+            }
+        })
+        /*.catch(function (error) {
+            currentPath = backupPath;
+            genFlashMessage("During the process, an error occurred (you may not have access rights). Please refresh page and try again.", "error", 20000)
+        });*/
+    }
+
+    function generatePath() {
+        document.querySelector(".mainPath").innerHTML = "";
+
+        //split path by /
+        let path = currentPath.split("/");
+        document.querySelector(".mainPath").innerHTML += "<button class='btn btn-secondary goRoot'>Root</button>";
+
+
+        for (let i = 0; i < path.length; i++) {
+            if (path[i] != "") {
+                document.querySelector(".mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
+                document.querySelector(".mainPath").innerHTML += `<button class='btn btn-secondary goPath my-1'>${path[i]}</button>`; 
+            }
+        }
+
+        document.querySelector(".goRoot").addEventListener("click", event => {
+            currentPath = "/";
+            generateFolders();
+        });
+
+        let goPath = document.querySelectorAll(".goPath");
+        for (let i = 0; i < goPath.length; i++) {
+            goPath[i].addEventListener("click", event => {
+                currentPath = "/";
+                for (let j = 0; j <= i; j++) {
+                    currentPath += goPath[j].innerText + "/";
+                }
+                generateFolders();
+            });
+        }
+
+    }
+
+    //FOLDER CLICK
+    function selectFolder() {
+        let folderDataFolders = document.querySelectorAll('.folderDataFolder');
+        folderDataFolders.forEach(function (folderDataFolder) {
+            folderDataFolder.addEventListener("click", event => {
+                deselectAllClear();
+                folderDataFolder.classList.add('selectedFolder');
+            });
+
+            folderDataFolder.addEventListener("dblclick", event => {
+                currentPath += folderDataFolder.querySelector(".folderName").innerText + "/";
+                generateFolders();
+            });
+        });
+    }
+
+    function deselectAllClear() {
+        if (document.querySelector(".selectedFolder")) {
+            document.querySelector(".selectedFolder").classList.remove('selectedFolder');
+        }
+    }
+
+    //onload
+    window.addEventListener("load", function() {
+        document.querySelector(".refreshButton").addEventListener("click", event => {
+            generateFolders();
+        });
+
+        let newFolderModal = "";
+        document.querySelector(".addFolderButton").addEventListener("click", event => {
+            newFolderModal = new bootstrap.Modal(document.querySelector("#newFolder"));
+            newFolderModal.show();
+        });
+    });
+    
+</script>
+
+
+<style>
+    .mainDrive {
+        margin: 10px;
+        min-height: 80vh;
+    }
+    .toolbar > i {
+        font-size: 1.6em;
+        transition: 0.3s;
+        color: #0d6efd;
+    }
+    .toolbar > i:hover {
+        color: #0849aa;
+        cursor: pointer;
+    }
+
+    .folderDataFolder, .folderDataFile, .folderDataDrive {
+        transition: 0.3s;
+        border: none;
+    }
+
+    .folderDataFolder:hover, .folderDataFile:hover, .folderDataDrive:hover {
+        background-color: #d1e7ff;
+        cursor: pointer;
+    }
+    .selectedFolder {
+        background-color: #73b6ff !important;
+    }
+    .folderName {
+        padding: 0;
+    }
+    .folderPathSelect {
+        white-space: unset !important;
+        text-align: left;
+        font-weight: 200;
+        line-height: 1.5;
+    }
+</style>
 
 @include ("partials/footer")
