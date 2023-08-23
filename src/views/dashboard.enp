@@ -1,5 +1,9 @@
 @include ("partials/head")
 @include ("partials/header")
+<script src="{{ env('BASE_URL') }}/public/js/fileExplorer.js"></script>
+<script>
+    let baseUrl = "{{ env('BASE_URL') }}";
+</script>
 
 <div class="card mainDrive">
     <div class="card-body">
@@ -39,135 +43,8 @@
 </div>
 
 <script>
-    var currentPath = "#drives#";
-    var backupPath = "#drives#";
-    generateFolders();
-
-    function generateFolders() {
-        axios.post('{{ env('BASE_URL') }}/api/fileViewer/getContent', {
-            path: currentPath
-        })
-        .then(function (response) {
-            if (response.data.apiResponse.type == "drives") {
-                drives = response.data.apiResponse.data;
-
-                if (drives.length == 0) {
-                    document.querySelector(".folders").innerHTML = "<p class='text-center'>No drives found.</p>";
-                }
-                for (let i = 0; i < drives.length; i++) {
-                    let icon = "/public/icons/drive.svg";
-                    if (drives[i]["accessLevel"] == "view") {
-                        icon = "/public/icons/drive-viewonly.svg";
-                    }
-
-                    let data =
-                    `<div class="card text-center folderDataDrive m-1" style="width: 8rem;">
-                        <img class="card-img-top mx-auto" src="{{ env('BASE_URL') }}${icon}" alt="Folder icon" style="max-width:4rem;">
-                        <div class="card-body folderName">
-                            <h6>${drives[i]["driveName"]}</h6>
-                        </div>
-                    </div>`;
-                    document.querySelector(".folders").innerHTML += data;
-                }
-
-
-            } else {
-                /*document.querySelector(".folders").innerHTML = "";
-
-                let folders = response.data.apiResponse.data;
-                if (folders.length == 0) {
-                    document.querySelector(".folders").innerHTML = "<p class='text-center'>No folders found.</p>";
-                }
-                for (let i = 0; i < folders.length; i++) {
-                    let data =
-                    `<div class="card text-center folderDataFolder m-1" style="width: 8rem;">
-                        <img class="card-img-top mx-auto" src="{{ env('BASE_URL') }}/public/icons/folder.svg" alt="Folder icon" style="max-width:4rem;">
-                        <div class="card-body folderName">
-                            <h6>${folders[i]}</h6>
-                        </div>
-                    </div>`;
-
-                    document.querySelector(".folders").innerHTML += data;
-                }
-                selectFolder();
-                generatePath();
-                backupPath = currentPath;*/
-            }
-        })
-        /*.catch(function (error) {
-            currentPath = backupPath;
-            genFlashMessage("During the process, an error occurred (you may not have access rights). Please refresh page and try again.", "error", 20000)
-        });*/
-    }
-
-    function generatePath() {
-        document.querySelector(".mainPath").innerHTML = "";
-
-        //split path by /
-        let path = currentPath.split("/");
-        document.querySelector(".mainPath").innerHTML += "<button class='btn btn-secondary goRoot'>Root</button>";
-
-
-        for (let i = 0; i < path.length; i++) {
-            if (path[i] != "") {
-                document.querySelector(".mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
-                document.querySelector(".mainPath").innerHTML += `<button class='btn btn-secondary goPath my-1'>${path[i]}</button>`; 
-            }
-        }
-
-        document.querySelector(".goRoot").addEventListener("click", event => {
-            currentPath = "/";
-            generateFolders();
-        });
-
-        let goPath = document.querySelectorAll(".goPath");
-        for (let i = 0; i < goPath.length; i++) {
-            goPath[i].addEventListener("click", event => {
-                currentPath = "/";
-                for (let j = 0; j <= i; j++) {
-                    currentPath += goPath[j].innerText + "/";
-                }
-                generateFolders();
-            });
-        }
-
-    }
-
-    //FOLDER CLICK
-    function selectFolder() {
-        let folderDataFolders = document.querySelectorAll('.folderDataFolder');
-        folderDataFolders.forEach(function (folderDataFolder) {
-            folderDataFolder.addEventListener("click", event => {
-                deselectAllClear();
-                folderDataFolder.classList.add('selectedFolder');
-            });
-
-            folderDataFolder.addEventListener("dblclick", event => {
-                currentPath += folderDataFolder.querySelector(".folderName").innerText + "/";
-                generateFolders();
-            });
-        });
-    }
-
-    function deselectAllClear() {
-        if (document.querySelector(".selectedFolder")) {
-            document.querySelector(".selectedFolder").classList.remove('selectedFolder');
-        }
-    }
-
-    //onload
-    window.addEventListener("load", function() {
-        document.querySelector(".refreshButton").addEventListener("click", event => {
-            generateFolders();
-        });
-
-        let newFolderModal = "";
-        document.querySelector(".addFolderButton").addEventListener("click", event => {
-            newFolderModal = new bootstrap.Modal(document.querySelector("#newFolder"));
-            newFolderModal.show();
-        });
-    });
-    
+    //remove all parameters from url
+    window.history.replaceState('', '', window.location.pathname);
 </script>
 
 

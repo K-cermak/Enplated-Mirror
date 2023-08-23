@@ -384,21 +384,23 @@
 
         $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
 
-        if (isset($_POST["path"]) && !empty($_POST["path"])) {
+        if (isset($_POST["path"]) && !empty($_POST["path"]) && isset($_POST["drive"]) && !empty($_POST["drive"])) {
             $path = $_POST["path"];
+            $drive = $_POST["drive"];
             $splitter = "/";
 
             if ($path == "#drives#") {
                 $drives = modelCall("drives", "getDrivesWithAccess", []);
 
                 for ($i = 0; $i < count($drives); $i++) {
-                    if (isset($drives["accessLevel"]) && $drives["accessLevel"] == "none") {
-                        unset($drives[$i]);
-                        continue;
-                    }
-                    //delete driveCredentials
                     unset($drives[$i]["driveCredentials"]);
+                    if (isset($drives[$i]["accessLevel"]) && $drives[$i]["accessLevel"] == "none") {
+                        unset($drives[$i]);
+                    }
                 }
+
+                //fix index
+                $drives = array_values($drives);
 
                 resourceView([
                     'apiResponse' => [
@@ -407,44 +409,86 @@
                         'data' => $drives
                     ]
                 ], 'json');
-            }
+            } else {
 
-            //if running on windows, replace / with \
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $splitter = "\\";
-                //get first 3 chars of __DIR__
-                $dir = substr(__DIR__, 0, 3);
-                if ($path == "/") {
-                    $path = $dir;
-                } else {
-                    //remove first char
-                    $path = substr($path, 1);
-                    $path = $dir . str_replace("/", "\\", $path);
+                $drives = modelCall("drives", "getDrivesWithAccess", []);
+                $drivesCredential = "";
+
+                //check if has access
+                $hasAccess = false;
+                for ($i = 0; $i < count($drives); $i++) {
+                    if ($drives[$i]["id"] == $drive) {
+                        if ($drives[$i]["accessLevel"] == "edit" || $drives[$i]["accessLevel"] == "view") {
+                            $hasAccess = true;
+                            $drivesCredential = $drives[$i]["driveCredentials"];
+                        }
+                        break;
+                    }
                 }
+
+                if (!$hasAccess) {
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'You do not have access to this drive'
+                        ]
+                    ], 'json');
+                }
+
+                //check if path doesnt contain .. or /../
+                if (strpos($path, "..") !== false || strpos($path, "/../") !== false) {
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Invalid path'
+                        ]
+                    ], 'json');
+                }
+
+                //get drive credentials and create path
+                $driveCredentials = json_decode($drivesCredential, true);
+                $driveType = $driveCredentials["type"];
+                if ($driveType == "local") {
+                    $drivePath = $driveCredentials["path"];
+                    $path = $drivePath . $path;
+                }
+    
+                //if running on windows, replace / with \
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    $splitter = "\\";
+                    //get first 3 chars of __DIR__
+                    $dir = substr(__DIR__, 0, 3);
+                    if ($path == "/") {
+                        $path = $dir;
+                    } else {
+                        //remove first char
+                        $path = substr($path, 1);
+                        $path = $dir . str_replace("/", "\\", $path);
+                    }
+                }
+
+                $folders = scandir($path);
+
+                //check if folder
+                /*$folders = array_filter($folders, function($folder) use ($path, $splitter) {
+                    return is_dir($path .  $splitter . $folder);
+                });*/
+
+                //remove . and ..
+                $folders = array_filter($folders, function($folder) {
+                    return $folder != "." && $folder != "..";
+                });
+
+                //reset index of array
+                $folders = array_values($folders);
+
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'success',
+                        'data' => $folders
+                    ]
+                ], 'json');
             }
-
-
-            /*$folders = scandir($path);
-
-            //check if folder
-            $folders = array_filter($folders, function($folder) use ($path, $splitter) {
-                return is_dir($path .  $splitter . $folder);
-            });
-            //remove . and ..
-            $folders = array_filter($folders, function($folder) {
-                return $folder != "." && $folder != "..";
-            });
-
-            //reset index of array
-            $folders = array_values($folders);*/
-
-            /*resourceView([
-                'apiResponse' => [
-                    'status' => 'success',
-                    'data' => $folders
-                ]
-            ], 'json');*/
-
         } else {
             require_once "engine/errors/403.php";
             die();

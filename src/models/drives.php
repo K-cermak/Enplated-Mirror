@@ -78,13 +78,19 @@
 
                 foreach ($groups as $group) {
                     $privilege = modelCall("privileges", "getPrivilegesForGroupInDrive", ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $drive["id"], "groupId" => $group["id"]]);
-                    if ($privilege["privilegeLevel"] == "-2") {
+
+                    if (!isset($privilege["0"]["privilegeLevel"])) {
+                        continue;
+                    }
+                    $privilegeLevel = $privilege["0"]["privilegeLevel"];
+
+                    if ($privilegeLevel == "-2") {
                         $privilegeDisabled = true;
-                    } else if ($privilege["privilegeLevel"] == "-1") {
+                    } else if ($privilegeLevel == "-1") {
                         $privilegeLimitToView = true;
-                    } else if ($privilege["privilegeLevel"] == "1") {
+                    } else if ($privilegeLevel == "1") {
                         $privilegeView = true;
-                    } else if ($privilege["privilegeLevel"] == "2") {
+                    } else if ($privilegeLevel == "2") {
                         $privilegeEdit = true;
                     }
                 }
@@ -102,7 +108,7 @@
                 }
             }
         }
-
+        
         return $drives;
     }
 ?>
