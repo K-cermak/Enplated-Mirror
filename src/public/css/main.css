@@ -42,3 +42,7 @@ strong {
     opacity: 1;
     color: #343434;
 }
+
+.flash-container {
+    z-index: 2000 !important;
+}

@@ -98,6 +98,16 @@
                 }
             }
 
+            //check if folder exists
+            if (!file_exists($path)) {
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Folder does not exist'
+                    ]
+                ], 'json');
+            }
+
             $folders = scandir($path);
 
             //check if folder
@@ -387,7 +397,6 @@
         if (isset($_POST["path"]) && !empty($_POST["path"]) && isset($_POST["drive"]) && !empty($_POST["drive"])) {
             $path = $_POST["path"];
             $drive = $_POST["drive"];
-            $splitter = "/";
 
             if ($path == "#drives#") {
                 $drives = modelCall("drives", "getDrivesWithAccess", []);
@@ -410,7 +419,6 @@
                     ]
                 ], 'json');
             } else {
-
                 $drives = modelCall("drives", "getDrivesWithAccess", []);
                 $drivesCredential = "";
 
@@ -455,7 +463,6 @@
     
                 //if running on windows, replace / with \
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                    $splitter = "\\";
                     //get first 3 chars of __DIR__
                     $dir = substr(__DIR__, 0, 3);
                     if ($path == "/") {
@@ -467,12 +474,17 @@
                     }
                 }
 
-                $folders = scandir($path);
+                //check if folder exists
+                if (!file_exists($path)) {
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Folder does not exist'
+                        ]
+                    ], 'json');
+                }
 
-                //check if folder
-                /*$folders = array_filter($folders, function($folder) use ($path, $splitter) {
-                    return is_dir($path .  $splitter . $folder);
-                });*/
+                $folders = scandir($path);
 
                 //remove . and ..
                 $folders = array_filter($folders, function($folder) {
@@ -492,6 +504,90 @@
         } else {
             require_once "engine/errors/403.php";
             die();
+        }
+    });
+
+    checkRoute('POST', '/api/fileViewer/createFolder', function() {
+        redirectNotLogin();
+
+        $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
+        if (isset($_POST["path"]) && !empty($_POST["path"]) && isset($_POST["drive"]) && !empty($_POST["drive"]) && isset($_POST["newName"]) && !empty($_POST["newName"])) {
+            $path = $_POST["path"];
+            $drive = $_POST["drive"];
+            $newName = $_POST["newName"];
+
+
+            $drives = modelCall("drives", "getDrivesWithAccess", []);
+            $drivesCredential = "";
+
+            //check if has access
+            $hasAccess = false;
+            for ($i = 0; $i < count($drives); $i++) {
+                if ($drives[$i]["id"] == $drive) {
+                    if ($drives[$i]["accessLevel"] == "edit") {
+                        $hasAccess = true;
+                        $drivesCredential = $drives[$i]["driveCredentials"];
+                    }
+                    break;
+                }
+            }
+
+            if (!$hasAccess) {
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'You do not have access to this drive'
+                    ]
+                ], 'json');
+            }
+
+            //check if path doesnt contain .. or /../
+            if (strpos($path, "..") !== false || strpos($path, "/../") !== false) {
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Invalid path'
+                    ]
+                ], 'json');
+            }
+
+            //get drive credentials and create path
+            $driveCredentials = json_decode($drivesCredential, true);
+            $driveType = $driveCredentials["type"];
+            if ($driveType == "local") {
+                $drivePath = $driveCredentials["path"];
+                $path = $drivePath . $path . "/" . $newName;
+            }
+
+            //if running on windows, replace / with \
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                //get first 3 chars of __DIR__
+                $dir = substr(__DIR__, 0, 3);
+                if ($path == "/") {
+                    $path = $dir;
+                } else {
+                    //remove first char
+                    $path = substr($path, 1);
+                    $path = $dir . str_replace("/", "\\", $path);
+                }
+            }
+
+            if (!file_exists($path)) {
+                mkdir($path);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'success',
+                        'message' => 'Folder created successfully'
+                    ]
+                ], 'json');
+            } else {
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Folder already exists'
+                    ]
+                ], 'json');
+            }
         }
     });
 ?>

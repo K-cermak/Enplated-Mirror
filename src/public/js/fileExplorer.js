@@ -1,7 +1,15 @@
-var currentPath = "#drives#";
-var currentDrive = "-1";
-var currentDriveName = "Drive Name";
-var driveAccessLevel = "view";
+if (sessionStorage.getItem("currentPath") == null) {
+    sessionStorage.setItem("currentPath", "#drives#");
+}
+if (sessionStorage.getItem("currentDrive") == null) {
+    sessionStorage.setItem("currentDrive", "-1");
+}
+if (sessionStorage.getItem("currentDriveName") == null) {
+    sessionStorage.setItem("currentDriveName", "Drive Name");
+}
+if (sessionStorage.getItem("driveAccessLevel") == null) {
+    sessionStorage.setItem("driveAccessLevel", "view");
+}
 
 //onload
 window.addEventListener("load", function() {
@@ -15,16 +23,21 @@ window.addEventListener("load", function() {
         deselectAllClear();
     });
 
+
+    let newFolderModal = new bootstrap.Modal(document.querySelector("#newFolder"));
     document.querySelector(".addFolderButton").addEventListener("click", event => {
-        let modal = new bootstrap.Modal(document.querySelector("#newFolder"));
-        modal.show();
+        newFolderModal.show();
     });
 
-    /*document.querySelector("#newFolderSubmit").addEventListener("click", event => {
+    document.querySelector("#newFolderSubmit").addEventListener("click", event => {
         let data = document.querySelector("#newFolderName").value;
+        if (data == "") {
+            return;
+        }
 
-        axios.post('{{ env('BASE_URL') }}/api/folders/create', {
-            path: currentPath,
+        axios.post(baseUrl + '/api/fileViewer/createFolder', {
+            path: sessionStorage.getItem("currentPath"),
+            drive: sessionStorage.getItem("currentDrive"),
             newName: data
         })
         .then(function (response) {
@@ -40,13 +53,13 @@ window.addEventListener("load", function() {
         .catch(function (error) {
             genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
         });
-    });*/
+    });
 });
 
 function generateFolders() {
     axios.post(baseUrl + '/api/fileViewer/getContent', {
-        path : currentPath,
-        drive : currentDrive
+        path : sessionStorage.getItem("currentPath"),
+        drive : sessionStorage.getItem("currentDrive")
     })
     .then(function (response) {
         document.querySelector(".folders").innerHTML = "";
@@ -111,18 +124,23 @@ function generateFolders() {
         }
     })
     .catch(function (error) {
-        genFlashMessage("During the process, an error occurred (you may not have access rights). Please refresh page and try again.", "error", 20000)
+        genFlashMessage("During the process, an error occurred (you may not have access rights). We have moved you to the main directory just in case.", "error", 20000);
+        sessionStorage.setItem("currentPath", "#drives#");
+        sessionStorage.setItem("currentDrive", "-1");
+        sessionStorage.setItem("currentDriveName", "Drive Name");
+        sessionStorage.setItem("driveAccessLevel", "view");
+        generateFolders();
     });
 }
 
 function generatePath() {
     document.querySelector(".mainPath").innerHTML = "<button class='btn btn-secondary goDrives'>All Drives</button>";
 
-    if (currentPath != "#drives#") {
+    if (sessionStorage.getItem("currentPath") != "#drives#") {
         //split path by /
-        let path = currentPath.split("/");
+        let path = sessionStorage.getItem("currentPath").split("/");
         document.querySelector(".mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
-        document.querySelector(".mainPath").innerHTML += "<button class='btn btn-secondary goRoot'>"+currentDriveName+"</button>";
+        document.querySelector(".mainPath").innerHTML += "<button class='btn btn-secondary goRoot'>"+sessionStorage.getItem("currentDriveName")+"</button>";
 
         for (let i = 0; i < path.length; i++) {
             if (path[i] != "") {
@@ -132,16 +150,16 @@ function generatePath() {
         }
     
         document.querySelector(".goRoot").addEventListener("click", event => {
-            currentPath = "/";
+            sessionStorage.setItem("currentPath", "/");
             generateFolders();
         });
 
         let goPath = document.querySelectorAll(".goPath");
         for (let i = 0; i < goPath.length; i++) {
             goPath[i].addEventListener("click", event => {
-                currentPath = "/";
+                sessionStorage.setItem("currentPath", "/");
                 for (let j = 0; j <= i; j++) {
-                    currentPath += goPath[j].innerText + "/";
+                    sessionStorage.setItem("currentPath", sessionStorage.getItem("currentPath") + goPath[j].innerText + "/");
                 }
                 generateFolders();
             });
@@ -149,18 +167,18 @@ function generatePath() {
     }
 
     document.querySelector(".goDrives").addEventListener("click", event => {
-        currentPath = "#drives#";
-        currentDrive = "-1";
+        sessionStorage.setItem("currentPath", "#drives#");
+        sessionStorage.setItem("currentDrive", "-1");
         generateFolders();
     });
 
     setIcons();
 }
 
-//UPLOAD AND CREATE ICONS
+//UPLOAD AND CREATE FOLDER ICONS
 function setIcons() {
     let state = true;
-    if (currentPath == "#drives#" || driveAccessLevel == "view") {
+    if (sessionStorage.getItem("currentPath") == "#drives#" || sessionStorage.getItem("driveAccessLevel") == "view") {
         state = false;
     }
 
@@ -182,10 +200,10 @@ function selectDrive() {
         });
 
         folderDataDrive.addEventListener("dblclick", event => {
-            currentDrive = folderDataDrive.querySelector(".folderName h6").getAttribute("dataId");
-            currentDriveName = folderDataDrive.querySelector(".folderName h6").innerText;
-            driveAccessLevel = folderDataDrive.querySelector(".folderName h6").getAttribute("accessLevel");
-            currentPath = "/";
+            sessionStorage.setItem("currentDrive", folderDataDrive.querySelector(".folderName h6").getAttribute("dataId"));
+            sessionStorage.setItem("currentDriveName", folderDataDrive.querySelector(".folderName h6").innerText);
+            sessionStorage.setItem("driveAccessLevel", folderDataDrive.querySelector(".folderName h6").getAttribute("accessLevel"));
+            sessionStorage.setItem("currentPath", "/");
             generateFolders();
         });
     });
@@ -201,7 +219,7 @@ function selectFolder() {
         });
 
         folderDataFolder.addEventListener("dblclick", event => {
-            currentPath += folderDataFolder.querySelector(".folderName").innerText + "/";
+            sessionStorage.setItem("currentPath", sessionStorage.getItem("currentPath") + folderDataFolder.querySelector(".folderName").innerText + "/");
             generateFolders();
         });
     });
