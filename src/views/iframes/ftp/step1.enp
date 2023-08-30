@@ -1,0 +1,60 @@
+@include ("partials/head-iframe")
+
+<p class="text-center">Please enter the information required to connect to the FTP server. If your server uses a port other than 21, you can change it. If you do not know what information to enter here, ask your FTP server administrator or web hosting provider.</p>
+<p class="text-center">Be aware that the password to the FTP disk is not encrypted in the database! Always protect the database from access by unauthorized people!</p>
+
+<form action="{{ env('BASE_URL') }}/iframes/new-drive?ftp&2" method="POST" class="p-3">
+    @if (isset($error) && $error != "")
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show my-3 w-100" role="alert">
+                <strong>Error:</strong> {{ $error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
+    @php
+        $serverAddress = "";
+        $port = "21";
+        $username = "";
+        $password = "";
+
+        if (isset($_SESSION["api-ftpServerAddress"])) {
+            $serverAddress = $_SESSION["api-ftpServerAddress"];
+        }
+        if (isset($_SESSION["api-ftpPort"])) {
+            $port = $_SESSION["api-ftpPort"];
+        }
+        if (isset($_SESSION["api-ftpUsername"])) {
+            $username = $_SESSION["api-ftpUsername"];
+        }
+    @endphp
+
+    <div class="floating-label-group mt-5">
+        <input type="text" name="serverAddress" class="form-control" value="{{ $serverAddress }}" minlength="3" maxlength="80" placeholder=" " required>
+        <label class="floating-label">Server Address</label>
+    </div>
+
+    <div class="floating-label-group mt-5">
+        <input type="text" name="port" class="form-control" value="{{ $port }}" minlength="1" maxlength="5" placeholder=" " required>
+        <label class="floating-label">Port</label>
+    </div>
+
+    <div class="floating-label-group mt-5">
+        <input type="text" name="username" class="form-control" value="{{ $username }}" maxlength="255" placeholder=" " required>
+        <label class="floating-label">Username</label>
+    </div>
+
+    <div class="floating-label-group mt-5">
+        <input type="password" name="password" class="form-control" value="" maxlength="255" placeholder=" ">
+        <label class="floating-label">Password</label>
+    </div>
+
+
+    <div class="d-flex justify-content-between">
+        <a href="{{ env('BASE_URL') }}/iframes/new-drive" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Back</a>
+        <button type="submit" class="btn btn-primary mt-3"><i class="bi bi-indent"></i> Try to connect</button>
+    </div>
+</form>
+
+@include ("/partials/footer")

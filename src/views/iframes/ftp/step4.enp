@@ -6,7 +6,7 @@
     </script>
 @else
     <div class="container mt-3">
-        <form action="{{ env('BASE_URL') }}/iframes/new-drive?local&4" method="POST">
+        <form action="{{ env('BASE_URL') }}/iframes/new-drive?ftp&5" method="POST">
             <p>Name the new shared space with a good name. This name will be displayed to all users for which the disk will be available.</p>
 
             @if (isset($error) && $error != "")

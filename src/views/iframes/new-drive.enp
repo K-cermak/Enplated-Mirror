@@ -9,6 +9,15 @@
             <a href="{{ env('BASE_URL') }}/iframes/new-drive?local&1" class="btn btn-primary stretched-link">Add a Local Folder</a>
         </div>
     </div>
+
+    <div class="card text-center" style="width: 18rem;">
+        <i class="bi bi-hdd-network mt-3" style="font-size:3em;"></i>
+        <div class="card-body">
+            <h5 class="card-title">New FTP Folder</h5>
+            <p class="card-text">Connect to the FTP server and select a folder to share.</p>
+            <a href="{{ env('BASE_URL') }}/iframes/new-drive?ftp&1" class="btn btn-primary stretched-link">Add a FTP Folder</a>
+        </div>
+    </div>
 </div>
 
 @include ("/partials/footer")

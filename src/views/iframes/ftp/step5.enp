@@ -1,0 +1,14 @@
+@include ("partials/head-iframe")
+
+<div class="container mt-3 text-center">
+    <h3>You have successfully added a new FTP folder.</h3>
+    <button type="button" class="btn btn-primary mt-3" id="mainClose"><i class="bi bi-check-circle"></i> Close</button>
+</div>
+
+<script>
+    document.querySelector("#mainClose").addEventListener("click", function() {
+        parent.postMessage("close-frame", "*");
+    });
+</script>
+
+@include ("/partials/footer")

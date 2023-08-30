@@ -16,6 +16,10 @@
     }
 
     function handle_error($code, $msg, $file, $line) {
+        //if warning, notice or deprecated error, ignore it
+        if ($code == E_WARNING) { //JUST BECAUSE PHP FTP LIBRARY IS CRAP
+            return;
+        }
         //delete all output buffers
         while (ob_get_level() > 0) {
             ob_end_clean();

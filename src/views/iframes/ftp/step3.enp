@@ -8,9 +8,9 @@
         echo "<div class='output'></div>";
     } else {
         if (isset($_GET["selectOnly"])) {
-            echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?local&1&selectOnly'>step 1</a> and try again.</p>";
+            echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?ftp&2&selectOnly'>step 1</a> and try again.</p>";
         } else {
-            echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?local&1'>step 1</a> and try again.</p>";
+            echo "<p>Error: No path was given. Return to <a href='". getAppEnvVar('BASE_URL') ."/iframes/new-drive?ftp&2'>step 1</a> and try again.</p>";
         }
     }
 
@@ -38,7 +38,7 @@
             axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 requestType: "exist",
-                type: "local"
+                type: "ftp"
             })
             .then(function (response) {
                 if (response.data.apiResponse.status == "success") {
@@ -67,7 +67,7 @@
             axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 requestType: "write",
-                type: "local"
+                type: "ftp"
             })
             .then(function (response) {
                 if (response.data.apiResponse.status == "success") {
@@ -96,7 +96,7 @@
             axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 requestType: "read",
-                type: "local"
+                type: "ftp"
             })
             .then(function (response) {
                 if (response.data.apiResponse.status == "success") {
@@ -125,14 +125,14 @@
             axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
                 path: selectedPath,
                 requestType: "delete",
-                type: "local"
+                type: "ftp"
             })
             .then(function (response) {
                 if (response.data.apiResponse.status == "success") {
                     output.querySelector(".lastWrite").innerHTML = "Verification of the delete permissions... <span class='text-success'>OK</span>";
                     document.querySelector(".lastWrite").classList.remove("lastWrite");
                     setTimeout(function() {
-                        checkIfHtaccess();
+                        finishWrite();
                     }, 1000);
                 } else {
                     output.querySelector(".lastWrite").innerHTML = "Verification of the delete permissions... <span class='text-danger'>Error</span>";
@@ -148,45 +148,13 @@
         }
     }
 
-    function checkIfHtaccess() {
-        if (allowedNext == true) {
-            document.querySelector(".output").innerHTML += "<p class='lastWrite'>Verification of the .htaccess file...</p>";
-            axios.post('{{ env('BASE_URL') }}/api/folders/verification', {
-                path: selectedPath,
-                requestType: "htaccess",
-                type: "local"
-            })
-            .then(function (response) {
-                if (response.data.apiResponse.status == "success") {
-                    output.querySelector(".lastWrite").innerHTML = "Verification of the .htaccess file... <span class='text-success'>OK</span>";
-                    document.querySelector(".lastWrite").classList.remove("lastWrite");
-                    finishWrite();
-                } else {
-                    output.querySelector(".lastWrite").innerHTML = "Verification of the .htaccess file... <span class='text-danger'>Error</span>";
-                    document.querySelector(".lastWrite").classList.remove("lastWrite");
-                    printErrorHtaccess();
-                }
-            })
-            .catch(function (error) {
-                output.querySelector(".lastWrite").innerHTML = "Verification of the .htaccess file... <span class='text-danger'>Error</span>";
-                document.querySelector(".lastWrite").classList.remove("lastWrite");
-                printErrorHtaccess();
-            });
-        }
-    }
-
-
     function printError() {
-        document.querySelector(".output").innerHTML += "<p>Verification failed in that folder. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1"+urlEnd+"'>go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3"+urlEnd+"'>here</a> and the path will still be used, even though it may cause problems in the application.</p>";
-    }
-    
-    function printErrorHtaccess() {
-        document.querySelector(".output").innerHTML += "<p>The .htaccess file is located in this folder. This can cause problems with access from the web. If you want to use the Enplated CDN project as a shared folder, please select the .../cdn-data folder from the main Enplated CDN directory, this folder is accessible without restrictions. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&1"+urlEnd+"'>go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3"+urlEnd+"'>here</a> and the path will still be used, even though it may cause problems in the application.</p>";
+        document.querySelector(".output").innerHTML += "<p>Verification failed in that folder. Please <a href='{{ env('BASE_URL') }}/iframes/new-drive?ftp&2"+urlEnd+"'>go back</a> one step and select the unrestricted folder.</p><p>If you want to ignore the recommendation and know what you are doing, you can continue <a href='{{ env('BASE_URL') }}/iframes/new-drive?ftp&4"+urlEnd+"'>here</a> and the path will still be used, even though it may cause problems in the application.</p>";
     }
 
     function finishWrite() {
         document.querySelector(".output").innerHTML += "<p>Verification completed successfully.</p>";
-        document.querySelector(".output").innerHTML += "<p>Now you can <a href='{{ env('BASE_URL') }}/iframes/new-drive?local&3"+urlEnd+"'>continue</a> to the next step.</p>";
+        document.querySelector(".output").innerHTML += "<p>Now you can <a href='{{ env('BASE_URL') }}/iframes/new-drive?ftp&4"+urlEnd+"'>continue</a> to the next step.</p>";
     }
 </script>
 
