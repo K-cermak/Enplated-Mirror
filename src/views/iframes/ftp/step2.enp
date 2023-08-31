@@ -1,6 +1,6 @@
 @include ("partials/head-iframe")
 
-<p class="text-center">Now please select the folder you want to set as default (first) for your new drive. You can select a folder by clicking on confirm button, and move into the folder by double clicking.</p>
+<p class="text-center">Now please select the folder you want to set as default (first) for your drive. You can select a folder by clicking on confirm button, and move into the folder by double clicking.</p>
         
 <div class="card">
     <div class="card-body">
@@ -17,7 +17,13 @@
     </div>
 </div>
 <div class="d-flex justify-content-between">
-    <a href="{{ env('BASE_URL') }}/iframes/new-drive?ftp&1" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Back</a>
+    @if (!isset($_GET['selectOnly']) && !isset($_GET['selectOnlySettings']))
+        <a href="{{ env('BASE_URL') }}/iframes/new-drive?ftp&1" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Back</a>
+    @elseif (isset($_GET['selectOnlySettings']))
+        <a href="{{ env('BASE_URL') }}/iframes/new-drive?ftp&1&selectOnly" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Back</a>
+    @else
+        <span></span>
+    @endif
     <button class="btn btn-primary mt-3" id="confirmPahtRun"><i class="bi bi-check-circle"></i> Confirm selection</button>
 </div>
 
@@ -54,7 +60,7 @@
                 <p class="folderPathSelect badge bg-secondary"></p>
 
                 <div class="text-center text-lg-start mt-4 pt-2">
-                    @if (isset($_GET['selectOnly']))
+                    @if (isset($_GET['selectOnly']) || isset($_GET['selectOnlySettings']))
                         <form action="{{ env('BASE_URL') }}/iframes/new-drive?ftp&3&selectOnly" method="POST">
                     @else
                         <form action="{{ env('BASE_URL') }}/iframes/new-drive?ftp&3" method="POST">

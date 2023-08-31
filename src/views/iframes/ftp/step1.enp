@@ -3,7 +3,12 @@
 <p class="text-center">Please enter the information required to connect to the FTP server. If your server uses a port other than 21, you can change it. If you do not know what information to enter here, ask your FTP server administrator or web hosting provider.</p>
 <p class="text-center">Be aware that the password to the FTP disk is not encrypted in the database! Always protect the database from access by unauthorized people!</p>
 
-<form action="{{ env('BASE_URL') }}/iframes/new-drive?ftp&2" method="POST" class="p-3">
+@if (isset($_GET['selectOnly']))
+    <form action="{{ env('BASE_URL') }}/iframes/new-drive?ftp&2&selectOnlySettings" method="POST" class="p-3">
+@else
+    <form action="{{ env('BASE_URL') }}/iframes/new-drive?ftp&2" method="POST" class="p-3">
+@endif
+
     @if (isset($error) && $error != "")
         <div class="container">
             <div class="alert alert-danger alert-dismissible fade show my-3 w-100" role="alert">
@@ -52,7 +57,11 @@
 
 
     <div class="d-flex justify-content-between">
-        <a href="{{ env('BASE_URL') }}/iframes/new-drive" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Back</a>
+        @if (!isset($_GET['selectOnly']))
+            <a href="{{ env('BASE_URL') }}/iframes/new-drive" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> Back</a>
+        @else
+            <span></span>
+        @endif
         <button type="submit" class="btn btn-primary mt-3"><i class="bi bi-indent"></i> Try to connect</button>
     </div>
 </form>

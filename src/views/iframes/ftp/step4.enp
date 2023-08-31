@@ -2,7 +2,7 @@
 
 @if (isset($_GET["selectOnly"]))
     <script>
-        parent.postMessage("close-changeFolder", "*");
+        parent.postMessage("close-changeFolderFtp", "*");
     </script>
 @else
     <div class="container mt-3">

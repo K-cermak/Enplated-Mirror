@@ -1,6 +1,6 @@
 @include ("partials/head-iframe")
 
-<p class="text-center">Now please select the folder you want to set as default (first) for your new drive. You can select a folder by clicking on confirm button, and move into the folder by double clicking.</p>
+<p class="text-center">Now please select the folder you want to set as default (first) for your drive. You can select a folder by clicking on confirm button, and move into the folder by double clicking.</p>
         
 <div class="card">
     <div class="card-body">

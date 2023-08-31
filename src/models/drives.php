@@ -6,6 +6,14 @@
         return $result;
     }
 
+    function getDriveData($db, $driveId) {
+        $stmt = $db->prepare("SELECT id, driveName, driveCredentials FROM drives WHERE id = :driveId");
+        $stmt->bindParam(':driveId', $driveId);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
+
 
 /**************************/
 

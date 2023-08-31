@@ -56,6 +56,7 @@
                     "type" => "local",
                     "path" => $_SESSION["api-selectedPath"]
                 ]);
+                //unset($_SESSION["api-selectedPath"]);
 
                 $result = modelCall('drives', 'createNewDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveName" => $name, "driveCredentials" => $driveCredentials]);
                 if ($result == -1) {
@@ -68,6 +69,20 @@
             }
 
             if (isset($_GET["ftp"]) && isset($_GET["1"])) {
+                if (isset($_GET["selectOnly"]) && isset($_GET["driveId"])) {
+                    //get from db
+                    $drive = modelCall('drives', 'getDriveData', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $_GET["driveId"]]);
+                    if ($drive == -1) {
+                        $template = processTemplate("iframes/ftp/error", []);
+                        break;
+                    }
+
+                    $driveCredentials = json_decode($drive[0]["driveCredentials"], true);
+                    $_SESSION["api-ftpServerAddress"] = $driveCredentials["serverAddress"];
+                    $_SESSION["api-ftpPort"] = $driveCredentials["port"];
+                    $_SESSION["api-ftpUsername"] = $driveCredentials["username"];
+                }
+
                 $template = processTemplate("iframes/ftp/step1", []);
                 break;
             }
@@ -79,25 +94,41 @@
                 $username = "";
                 $password = "";
 
-                if (isset($_POST["serverAddress"]) && !empty($_POST["serverAddress"])) {
-                    $serverAddress = $_POST["serverAddress"];
-                } else if (isset($_SESSION["api-ftpServerAddress"]) && !empty($_SESSION["api-ftpServerAddress"])) {
-                    $serverAddress = $_SESSION["api-ftpServerAddress"];
-                }
-                if (isset($_POST["port"]) && !empty($_POST["port"])) {
-                    $port = $_POST["port"];
-                } else if (isset($_SESSION["api-ftpPort"]) && !empty($_SESSION["api-ftpPort"])) {
-                    $port = $_SESSION["api-ftpPort"];
-                }
-                if (isset($_POST["username"]) && !empty($_POST["username"])) {
-                    $username = $_POST["username"];
-                } else if (isset($_SESSION["api-ftpUsername"]) && !empty($_SESSION["api-ftpUsername"])) {
-                    $username = $_SESSION["api-ftpUsername"];
-                }
-                if (isset($_POST["password"]) && !empty($_POST["password"])) {
-                    $password = $_POST["password"];
-                } else if (isset($_SESSION["api-ftpPassword"]) && !empty($_SESSION["api-ftpPassword"])) {
-                    $password = $_SESSION["api-ftpPassword"];
+                if (isset($_GET["selectOnly"]) && isset($_GET["driveId"])) {
+                    //get from db
+                    $drive = modelCall('drives', 'getDriveData', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $_GET["driveId"]]);
+                    if ($drive == -1) {
+                        $template = processTemplate("iframes/ftp/error", []);
+                        break;
+                    }
+
+                    $driveCredentials = json_decode($drive[0]["driveCredentials"], true);
+                    $serverAddress = $driveCredentials["serverAddress"];
+                    $port = $driveCredentials["port"];
+                    $username = $driveCredentials["username"];
+                    $password = $driveCredentials["password"];
+                    
+                } else {
+                    if (isset($_POST["serverAddress"]) && !empty($_POST["serverAddress"])) {
+                        $serverAddress = $_POST["serverAddress"];
+                    } else if (isset($_SESSION["api-ftpServerAddress"]) && !empty($_SESSION["api-ftpServerAddress"])) {
+                        $serverAddress = $_SESSION["api-ftpServerAddress"];
+                    }
+                    if (isset($_POST["port"]) && !empty($_POST["port"])) {
+                        $port = $_POST["port"];
+                    } else if (isset($_SESSION["api-ftpPort"]) && !empty($_SESSION["api-ftpPort"])) {
+                        $port = $_SESSION["api-ftpPort"];
+                    }
+                    if (isset($_POST["username"]) && !empty($_POST["username"])) {
+                        $username = $_POST["username"];
+                    } else if (isset($_SESSION["api-ftpUsername"]) && !empty($_SESSION["api-ftpUsername"])) {
+                        $username = $_SESSION["api-ftpUsername"];
+                    }
+                    if (isset($_POST["password"]) && !empty($_POST["password"])) {
+                        $password = $_POST["password"];
+                    } else if (isset($_SESSION["api-ftpPassword"]) && !empty($_SESSION["api-ftpPassword"])) {
+                        $password = $_SESSION["api-ftpPassword"];
+                    }
                 }
 
                 $port = intval($port);
@@ -111,13 +142,21 @@
                 //try to connect
                 $ftp_conn = ftp_connect($serverAddress, $port, 10);
                 if (!$ftp_conn) {
-                    $template = processTemplate("iframes/ftp/step1", ['error' => 'Error connecting to server']);
+                    if (isset($_GET["selectOnly"])) {
+                        $template = processTemplate("iframes/ftp/error", []);
+                    } else {
+                        $template = processTemplate("iframes/ftp/step1", ['error' => 'Error connecting to server']);
+                    }
                     break;
                 }
 
                 //try to login
                 if (!ftp_login($ftp_conn, $username, $password)) {
-                    $template = processTemplate("iframes/ftp/step1", ['error' => 'Error logging in']);
+                    if (isset($_GET["selectOnly"])) {
+                        $template = processTemplate("iframes/ftp/error", []);
+                    } else {
+                        $template = processTemplate("iframes/ftp/step1", ['error' => 'Error logging in']);
+                    }
                     break;
                 }
 
@@ -166,6 +205,11 @@
                     "username" => $_SESSION["api-ftpUsername"],
                     "password" => $_SESSION["api-ftpPassword"]
                 ]);
+                unset($_SESSION["api-selectedPath"]);
+                unset($_SESSION["api-ftpServerAddress"]);
+                unset($_SESSION["api-ftpPort"]);
+                unset($_SESSION["api-ftpUsername"]);
+                unset($_SESSION["api-ftpPassword"]);
 
                 $result = modelCall('drives', 'createNewDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveName" => $name, "driveCredentials" => $driveCredentials]);
                 if ($result == -1) {
@@ -253,8 +297,8 @@
                 $folders = ftp_nlist($ftp_conn, $path);
 
                 //check if folder
-                $folders = array_filter($folders, function($folder) use ($ftp_conn, $path) {
-                    return ftp_size($ftp_conn, $path . "/" . $folder) == -1;
+                $folders = array_filter($folders, function($folder) use ($ftp_conn) {
+                    return ftp_size($ftp_conn, $folder) == -1;
                 });
 
                 //remove path from folder name
@@ -540,7 +584,7 @@
                 }
 
                 if ($requestType == "exist") {
-                    if (ftp_nlist($ftp_conn, $path) != false) {
+                    if (ftp_nlist($ftp_conn, $path) !== false) {
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'success',
@@ -564,7 +608,7 @@
                     ftp_fput($ftp_conn, $newPath, $file, FTP_ASCII);
 
                     //check if file exists
-                    if (ftp_nlist($ftp_conn, $newPath) != false) {
+                    if (ftp_nlist($ftp_conn, $newPath) !== false) {
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'success',
@@ -583,7 +627,7 @@
                     //check if verify.enp file exists and its content is enp-verify
                     $newPath = $path . "/" . "verify.enp";
                     
-                    if (ftp_nlist($ftp_conn, $newPath) != -1) {
+                    if (ftp_nlist($ftp_conn, $newPath) !== false) {
                         $file = fopen('php://temp', "w");
                         ftp_fget($ftp_conn, $file, $newPath, FTP_ASCII);
                         rewind($file);
@@ -616,7 +660,7 @@
                 } else if ($requestType == "delete") {
                     //delete verify.enp file in folder
                     $newPath = $path . "/" . "verify.enp";
-                    if (ftp_nlist($ftp_conn, $newPath) != false) {
+                    if (ftp_nlist($ftp_conn, $newPath) !== false) {
                         ftp_delete($ftp_conn, $newPath);
                     }
 
@@ -647,9 +691,12 @@
         
         $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
 
-        if (isset($_POST["driveId"]) && !empty($_POST["driveId"])) {
+        if (isset($_POST["driveId"]) && !empty($_POST["driveId"]) && isset($_POST["type"]) && !empty($_POST["type"])) {
+            $driveId = $_POST["driveId"];
+            $type = $_POST["type"]; //local or ftp
+
             //check if drive exists
-            $driveExist = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $_POST["driveId"]]);
+            $driveExist = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
             if (!$driveExist) {
                 resourceView([
                     'apiResponse' => [
@@ -659,12 +706,23 @@
                 ], 'json');
             }
 
-            $driveCredentials = json_encode([
-                "type" => "local",
-                "path" => $_SESSION["api-selectedPath"]
-            ]);
+            if ($type == "local") {
+                $driveCredentials = json_encode([
+                    "type" => "local",
+                    "path" => $_SESSION["api-selectedPath"]
+                ]);
+            } else if ($type == "ftp") {
+                $driveCredentials = json_encode([
+                    "type" => "ftp",
+                    "path" => $_SESSION["api-selectedPath"],
+                    "serverAddress" => $_SESSION["api-ftpServerAddress"],
+                    "port" => $_SESSION["api-ftpPort"],
+                    "username" => $_SESSION["api-ftpUsername"],
+                    "password" => $_SESSION["api-ftpPassword"]
+                ]);
+            }
 
-            modelCall('drives', 'updateDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $_POST["driveId"], "driveCredentials" => $driveCredentials]);
+            modelCall('drives', 'updateDrive', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId, "driveCredentials" => $driveCredentials]);
             resourceView([
                 'apiResponse' => [
                     'status' => 'success',
