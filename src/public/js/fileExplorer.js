@@ -71,10 +71,22 @@ function generateFolders() {
             }
 
             for (let i = 0; i < drives.length; i++) {
-                let icon = baseUrl + "/public/icons/drive.svg";
-                if (drives[i]["accessLevel"] == "view") {
-                    icon = baseUrl + "/public/icons/drive-viewonly.svg";
+                let icon = "";
+
+                if (drives[i]["type"] == "local") {
+                    if (drives[i]["accessLevel"] == "edit") {
+                        icon = baseUrl + "/public/icons/drive.svg";
+                    } else {
+                        icon = baseUrl + "/public/icons/drive-viewonly.svg";
+                    }
+                } else if (drives[i]["type"] == "ftp") {
+                    if (drives[i]["accessLevel"] == "edit") {
+                        icon = baseUrl + "/public/icons/ftp.svg";
+                    } else {
+                        icon = baseUrl + "/public/icons/ftp-viewonly.svg";
+                    }
                 }
+
 
                 let data =
                 `<div class="card text-center folderDataDrive m-1" style="width: 8rem;">
@@ -124,7 +136,11 @@ function generateFolders() {
         }
     })
     .catch(function (error) {
-        genFlashMessage("During the process, an error occurred (you may not have access rights). We have moved you to the main directory just in case.", "error", 20000);
+        if (error.response.data.apiResponse.type == "error-connecting-to-server" || error.response.data.apiResponse.type == "error-logging-in") {
+            genFlashMessage("Failed to connect to FTP server. Check that the FTP server settings are still the same and contact the administrator if necessary.", "error", 20000);
+        } else {
+            genFlashMessage("During the process, an error occurred (you may not have access rights). We have moved you to the main directory just in case.", "error", 20000);
+        }
         sessionStorage.setItem("currentPath", "#drives#");
         sessionStorage.setItem("currentDrive", "-1");
         sessionStorage.setItem("currentDriveName", "Drive Name");

@@ -256,6 +256,7 @@
 
                 //check if folder exists
                 if (!file_exists($path)) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -275,6 +276,7 @@
                 //try to connect
                 $ftp_conn = ftp_connect($_SESSION["api-ftpServerAddress"], $_SESSION["api-ftpPort"], 10);
                 if (!$ftp_conn) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -285,6 +287,7 @@
 
                 //try to login
                 if (!ftp_login($ftp_conn, $_SESSION["api-ftpUsername"], $_SESSION["api-ftpPassword"])) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -369,6 +372,7 @@
                         ]
                     ], 'json');
                 } else {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -380,6 +384,7 @@
                 //try to connect
                 $ftp_conn = ftp_connect($_SESSION["api-ftpServerAddress"], $_SESSION["api-ftpPort"], 10);
                 if (!$ftp_conn) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -390,6 +395,7 @@
 
                 //try to login
                 if (!ftp_login($ftp_conn, $_SESSION["api-ftpUsername"], $_SESSION["api-ftpPassword"])) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -400,6 +406,7 @@
 
                 //create folder
                 if (!ftp_mkdir($ftp_conn, $path . "/" . $newName)) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -458,6 +465,7 @@
                             ]
                         ], 'json');
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -481,6 +489,7 @@
                             ]
                         ], 'json');
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -504,6 +513,7 @@
                                 ]
                             ], 'json');
                         } else {
+                            http_response_code(400);
                             resourceView([
                                 'apiResponse' => [
                                     'status' => 'error',
@@ -512,6 +522,7 @@
                             ], 'json');
                         }
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -535,6 +546,7 @@
                             ]
                         ], 'json');
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -553,6 +565,7 @@
                             ]
                         ], 'json');
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -565,6 +578,7 @@
                 //try to connect
                 $ftp_conn = ftp_connect($_SESSION["api-ftpServerAddress"], $_SESSION["api-ftpPort"], 10);
                 if (!$ftp_conn) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -575,6 +589,7 @@
 
                 //try to login
                 if (!ftp_login($ftp_conn, $_SESSION["api-ftpUsername"], $_SESSION["api-ftpPassword"])) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -592,6 +607,7 @@
                             ]
                         ], 'json');
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -616,6 +632,7 @@
                             ]
                         ], 'json');
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -642,6 +659,7 @@
                                 ]
                             ], 'json');
                         } else {
+                            http_response_code(400);
                             resourceView([
                                 'apiResponse' => [
                                     'status' => 'error',
@@ -650,6 +668,7 @@
                             ], 'json');
                         }
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -673,6 +692,7 @@
                             ]
                         ], 'json');
                     } else {
+                        http_response_code(400);
                         resourceView([
                             'apiResponse' => [
                                 'status' => 'error',
@@ -698,6 +718,7 @@
             //check if drive exists
             $driveExist = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
             if (!$driveExist) {
+                http_response_code(400);
                 resourceView([
                     'apiResponse' => [
                         'status' => 'error',
@@ -744,6 +765,7 @@
 
             $driveExist = modelCall('drives', 'checkIfDriveExist', ['db' => getDatabaseEnvConn('sqlite'), "driveId" => $driveId]);
             if (!$driveExist) {
+                http_response_code(400);
                 resourceView([
                     'apiResponse' => [
                         'status' => 'error',
@@ -779,6 +801,8 @@
                 $drives = modelCall("drives", "getDrivesWithAccess", []);
 
                 for ($i = 0; $i < count($drives); $i++) {
+                    $type = json_decode($drives[$i]["driveCredentials"], true)["type"];
+                    $drives[$i]["type"] = $type;
                     unset($drives[$i]["driveCredentials"]);
                     if (isset($drives[$i]["accessLevel"]) && $drives[$i]["accessLevel"] == "none") {
                         unset($drives[$i]);
@@ -812,6 +836,7 @@
                 }
 
                 if (!$hasAccess) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -822,6 +847,7 @@
 
                 //check if path doesnt contain .. or /../
                 if (strpos($path, "..") !== false || strpos($path, "/../") !== false) {
+                    http_response_code(400);
                     resourceView([
                         'apiResponse' => [
                             'status' => 'error',
@@ -833,40 +859,84 @@
                 //get drive credentials and create path
                 $driveCredentials = json_decode($drivesCredential, true);
                 $driveType = $driveCredentials["type"];
+
                 if ($driveType == "local") {
                     $drivePath = $driveCredentials["path"];
                     $path = $drivePath . $path;
-                }
     
-                //if running on windows, replace / with \
-                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                    //get first 3 chars of __DIR__
-                    $dir = substr(__DIR__, 0, 3);
-                    if ($path == "/") {
-                        $path = $dir;
-                    } else {
-                        //remove first char
-                        $path = substr($path, 1);
-                        $path = $dir . str_replace("/", "\\", $path);
+                    //if running on windows, replace / with \
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        //get first 3 chars of __DIR__
+                        $dir = substr(__DIR__, 0, 3);
+                        if ($path == "/") {
+                            $path = $dir;
+                        } else {
+                            //remove first char
+                            $path = substr($path, 1);
+                            $path = $dir . str_replace("/", "\\", $path);
+                        }
                     }
+
+                    //check if folder exists
+                    if (!file_exists($path)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'message' => 'Folder does not exist'
+                            ]
+                        ], 'json');
+                    }
+
+                    $folders = scandir($path);
+
+                    //remove . and ..
+                    $folders = array_filter($folders, function($folder) {
+                        return $folder != "." && $folder != "..";
+                    });
+                } else if ($driveType == "ftp") {
+                    $drivePath = $driveCredentials["path"];
+                    $serverAddress = $driveCredentials["serverAddress"];
+                    $port = $driveCredentials["port"];
+                    $username = $driveCredentials["username"];
+                    $password = $driveCredentials["password"];
+
+                    //try to connect
+                    $ftp_conn = ftp_connect($serverAddress, $port, 10);
+                    if (!$ftp_conn) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-connecting-to-server',
+                                'message' => 'Error connecting to server'
+                            ]
+                        ], 'json');
+                    }
+
+                    //try to login
+                    if (!ftp_login($ftp_conn, $username, $password)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-logging-in',
+                                'message' => 'Error logging in'
+                            ]
+                        ], 'json');
+                    }
+
+                    //get folders
+                    $folders = ftp_nlist($ftp_conn, $path);
+
+                    //close connection
+                    ftp_close($ftp_conn);
+
+                    //remove path from folder name
+                    $folders = array_map(function($folder) use ($path) {
+                        return str_replace($path, "", $folder);
+                    }, $folders);
                 }
-
-                //check if folder exists
-                if (!file_exists($path)) {
-                    resourceView([
-                        'apiResponse' => [
-                            'status' => 'error',
-                            'message' => 'Folder does not exist'
-                        ]
-                    ], 'json');
-                }
-
-                $folders = scandir($path);
-
-                //remove . and ..
-                $folders = array_filter($folders, function($folder) {
-                    return $folder != "." && $folder != "..";
-                });
 
                 //reset index of array
                 $folders = array_values($folders);
@@ -910,6 +980,7 @@
             }
 
             if (!$hasAccess) {
+                http_response_code(400);
                 resourceView([
                     'apiResponse' => [
                         'status' => 'error',
@@ -920,6 +991,7 @@
 
             //check if path doesnt contain .. or /../
             if (strpos($path, "..") !== false || strpos($path, "/../") !== false) {
+                http_response_code(400);
                 resourceView([
                     'apiResponse' => [
                         'status' => 'error',
@@ -934,34 +1006,87 @@
             if ($driveType == "local") {
                 $drivePath = $driveCredentials["path"];
                 $path = $drivePath . $path . "/" . $newName;
-            }
 
-            //if running on windows, replace / with \
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                //get first 3 chars of __DIR__
-                $dir = substr(__DIR__, 0, 3);
-                if ($path == "/") {
-                    $path = $dir;
-                } else {
-                    //remove first char
-                    $path = substr($path, 1);
-                    $path = $dir . str_replace("/", "\\", $path);
+                //if running on windows, replace / with \
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    //get first 3 chars of __DIR__
+                    $dir = substr(__DIR__, 0, 3);
+                    if ($path == "/") {
+                        $path = $dir;
+                    } else {
+                        //remove first char
+                        $path = substr($path, 1);
+                        $path = $dir . str_replace("/", "\\", $path);
+                    }
                 }
-            }
 
-            if (!file_exists($path)) {
-                mkdir($path);
+                if (!file_exists($path)) {
+                    mkdir($path);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'message' => 'Folder created successfully'
+                        ]
+                    ], 'json');
+                } else {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Folder already exists'
+                        ]
+                    ], 'json');
+                }
+            } else if ($driveType == "ftp") {
+                $drivePath = $driveCredentials["path"];
+                $serverAddress = $driveCredentials["serverAddress"];
+                $port = $driveCredentials["port"];
+                $username = $driveCredentials["username"];
+                $password = $driveCredentials["password"];
+
+                //try to connect
+                $ftp_conn = ftp_connect($serverAddress, $port, 10);
+                if (!$ftp_conn) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'type' => 'error-connecting-to-server',
+                            'message' => 'Error connecting to server'
+                        ]
+                    ], 'json');
+                }
+
+                //try to login
+                if (!ftp_login($ftp_conn, $username, $password)) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'type' => 'error-logging-in',
+                            'message' => 'Error logging in'
+                        ]
+                    ], 'json');
+                }
+
+                //create folder
+                if (!ftp_mkdir($ftp_conn, $path . "/" . $newName)) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Error creating folder'
+                        ]
+                    ], 'json');
+                }
+
+                //close connection
+                ftp_close($ftp_conn);
+
                 resourceView([
                     'apiResponse' => [
                         'status' => 'success',
                         'message' => 'Folder created successfully'
-                    ]
-                ], 'json');
-            } else {
-                resourceView([
-                    'apiResponse' => [
-                        'status' => 'error',
-                        'message' => 'Folder already exists'
                     ]
                 ], 'json');
             }
