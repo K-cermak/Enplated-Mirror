@@ -5,42 +5,60 @@
     let baseUrl = "{{ env('BASE_URL') }}";
 </script>
 
-<div class="card mainDrive">
-    <div class="card-body">
-        <div class="row card-title">
-            <div class="col-sm-9 mainPath"></div>
-            <div class="col-sm-3 text-end mt-1 toolbar">
-                <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
-                <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
-                <i class="bi bi-arrow-bar-left mt-2 mx-2 openNewPanel"></i>
+<div class="d-flex flex-row">
+    <div class="card mainDrive tabInfo" dataId="1">
+        <div class="card-body">
+            <div class="row card-title">
+                <div class="col-sm-8 mainPath"></div>
+                <div class="col-sm-4 text-end mt-1 toolbar">
+                    <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
+                    <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
+                    <i class="bi bi-arrow-bar-left mt-2 mx-2 panelSwitcher d-none d-md-inline"></i>
+                </div>
+            </div>
+            <div>
+                <div class="row folders mt-3"></div>
             </div>
         </div>
-        <div>
-            <div class="row folders mt-3"></div>
+    </div>
+
+    <div class="card secondDrive tabInfo" dataId="2">
+        <div class="card-body">
+            <div class="row card-title">
+                <div class="col-sm-8 mainPath"></div>
+                <div class="col-sm-4 text-end mt-1 toolbar">
+                    <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
+                    <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
+                </div>
+            </div>
+            <div>
+                <div class="row folders mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" id="newFolder">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Folder</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="floating-label-group mt-3">
+                        <input type="text" id="newFolderName" name="newName" class="form-control" minlength="1" maxlength="20" placeholder=" " required>
+                        <label class="floating-label">Folder Name</label>
+                    </div>
+
+                    <div class="text-center text-lg-start mt-4 pt-2">
+                        <button class="btn btn-primary px-5" id="newFolderSubmit">Create a New Folder</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" tabindex="-1" id="newFolder">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">New Folder</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="floating-label-group mt-3">
-                    <input type="text" id="newFolderName" name="newName" class="form-control" minlength="1" maxlength="20" placeholder=" " required>
-                    <label class="floating-label">Folder Name</label>
-                </div>
-
-                <div class="text-center text-lg-start mt-4 pt-2">
-                    <button class="btn btn-primary px-5" id="newFolderSubmit">Create a New Folder</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
     //remove all parameters from url
@@ -49,9 +67,16 @@
 
 
 <style>
-    .mainDrive {
+    .mainDrive, .secondDrive {
         margin: 10px;
         min-height: 80vh;
+    }
+    .mainDrive {
+        width: 100%;
+    }
+    .secondDrive {
+        width: 50%;
+        display: none;
     }
     .toolbar > i {
         font-size: 1.6em;
@@ -72,8 +97,8 @@
         background-color: #d1e7ff;
         cursor: pointer;
     }
-    .selectedFolder {
-        background-color: #73b6ff !important;
+    .selectedItem {
+        background-color: #c9e3ff !important;
     }
     .folderName {
         padding: 0;

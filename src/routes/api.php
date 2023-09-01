@@ -941,6 +941,27 @@
                 //reset index of array
                 $folders = array_values($folders);
 
+                $files = [];
+                //if has extension, get file
+                for ($i = 0; $i < count($folders); $i++) {
+                    $extension = pathinfo($folders[$i], PATHINFO_EXTENSION);
+                    if (!empty($extension)) {
+                        array_push($files, $folders[$i]);
+                        unset($folders[$i]);
+                    }
+                }
+
+                //sort files
+                sort($files);
+
+                //reset index of array
+                $folders = array_values($folders);
+
+                //add files to folders
+                for ($i = 0; $i < count($files); $i++) {
+                    array_push($folders, $files[$i]);
+                }
+
                 resourceView([
                     'apiResponse' => [
                         'status' => 'success',
