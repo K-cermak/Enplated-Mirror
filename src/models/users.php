@@ -110,10 +110,10 @@
 
 
     //PRIVILEGE LEVEL
-    function changeprivilegeLevel($db, $id, $newprivilegeLevel) {
-        $stmt = $db->prepare("UPDATE users SET privilegeLevel = :newprivilegeLevel WHERE id = :id");
+    function changePrivilegeLevel($db, $id, $newPrivilegeLevel) {
+        $stmt = $db->prepare("UPDATE users SET privilegeLevel = :newPrivilegeLevel WHERE id = :id");
         $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':newprivilegeLevel', $newprivilegeLevel);
+        $stmt->bindParam(':newPrivilegeLevel', $newPrivilegeLevel);
         $stmt->execute();
     }
 ?>

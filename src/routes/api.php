@@ -1113,4 +1113,365 @@
             }
         }
     });
+
+    checkRoute('POST', '/api/fileViewer/getFileInfo', function() {
+        redirectNotLogin();
+
+        $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
+        
+        if (isset($_POST["drive"]) && !empty($_POST["drive"]) && isset($_POST["type"]) && !empty($_POST["type"])) {
+            $drive = $_POST["drive"];
+            $type = $_POST["type"]; //drive or folder or file
+
+            if ($type == "folder" || $type == "file") {
+                if (!isset($_POST["path"]) || empty($_POST["path"])) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Path not specified'
+                        ]
+                    ], 'json');
+                } else {
+                    $path = $_POST["path"];
+                }
+
+                if (strpos($path, "..") !== false || strpos($path, "/../") !== false) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Invalid path'
+                        ]
+                    ], 'json');
+                }
+            }
+
+            if ($type == "file") {
+                if (!isset($_POST["file"]) || empty($_POST["file"])) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'File not specified'
+                        ]
+                    ], 'json');
+                } else {
+                    $file = $_POST["file"];
+                }
+
+                if (strpos($file, "..") !== false || strpos($file, "/../") !== false) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Invalid file'
+                        ]
+                    ], 'json');
+                }
+            }
+
+            //check if has access
+            $drives = modelCall("drives", "getDrivesWithAccess", []);
+            $drivesCredential = "";
+            $hasAccess = false;
+            for ($i = 0; $i < count($drives); $i++) {
+                if ($drives[$i]["id"] == $drive) {
+                    if ($drives[$i]["accessLevel"] == "edit") {
+                        $hasAccess = "edit";
+                        $drivesCredential = $drives[$i]["driveCredentials"];
+                    } else if ($drives[$i]["accessLevel"] == "view") {
+                        $hasAccess = "view";
+                        $drivesCredential = $drives[$i]["driveCredentials"];
+                    }
+                    break;
+                }
+            }
+
+            if (!$hasAccess) {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'You do not have access to this drive'
+                    ]
+                ], 'json');
+            }
+
+            $driveCredentials = json_decode($drivesCredential, true);
+            $driveType = $driveCredentials["type"];
+
+            if ($type == "drive") {
+                if ($driveType == "local") {
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'type' => 'drive',
+                            'driveType' => $driveType,
+                            'accessLevel' => $hasAccess
+                        ]
+                    ], 'json');
+
+                } else if ($driveType == "ftp") {
+                    //get host and port
+                    $serverAddress = $driveCredentials["serverAddress"];
+                    $port = $driveCredentials["port"];
+
+                    //get ping
+                    $ping = pingServer($serverAddress, $port);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'type' => 'drive',
+                            'driveType' => $driveType,
+                            'ping' => $ping,
+                            'accessLevel' => $hasAccess
+                        ]
+                    ], 'json');
+                }
+            } else if ($type == "folder") {
+                //size, number of files, dates
+
+                if ($driveType == "local") {
+                    $drivePath = $driveCredentials["path"];
+                    $path = $drivePath . $path;
+
+                    //if running on windows, replace / with \
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        //get first 3 chars of __DIR__
+                        $dir = substr(__DIR__, 0, 3);
+                        if ($path == "/") {
+                            $path = $dir;
+                        } else {
+                            //remove first char
+                            $path = substr($path, 1);
+                            $path = $dir . str_replace("/", "\\", $path);
+                        }
+                    }
+
+                    //check if folder exists
+                    if (!file_exists($path)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'message' => 'Folder does not exist'
+                            ]
+                        ], 'json');
+                    }
+
+                    //get size and number of files
+                    $size = 0;
+                    $numberOfFiles = 0;
+                    $overflow = false;
+                    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)) as $file) {
+                        if ($file->getFilename() == "." || $file->getFilename() == "..") {
+                            continue;
+                        }
+                        if ($numberOfFiles >= getAppEnvVar("COUNT_FILE_MAX")) {
+                            $overflow = true;
+                            break;
+                        }
+                        $size += $file->getSize();
+                        $numberOfFiles++;
+                    }
+
+                    //get dates
+                    $creationDate = date("Y-m-d H:i:s", filectime($path));
+                    $lastModifiedDate = date("Y-m-d H:i:s", filemtime($path));
+
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'type' => 'folder',
+                            'size' => $size,
+                            'numberOfFiles' => $numberOfFiles,
+                            'creationDate' => $creationDate,
+                            'lastModifiedDate' => $lastModifiedDate,
+                            'overflow' => $overflow,
+                            'driveType' => "local",
+                        ]
+                    ], 'json');
+
+                } else if ($driveType == "ftp") {
+                    $drivePath = $driveCredentials["path"];
+                    $serverAddress = $driveCredentials["serverAddress"];
+                    $port = $driveCredentials["port"];
+                    $username = $driveCredentials["username"];
+                    $password = $driveCredentials["password"];
+
+                    //try to connect
+                    $ftp_conn = ftp_connect($serverAddress, $port, 10);
+                    if (!$ftp_conn) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-connecting-to-server',
+                                'message' => 'Error connecting to server'
+                            ]
+                        ], 'json');
+                    }
+
+                    //try to login
+                    if (!ftp_login($ftp_conn, $username, $password)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-logging-in',
+                                'message' => 'Error logging in'
+                            ]
+                        ], 'json');
+                    }
+
+                    //get size and number of files
+                    $size = 0;
+                    $numberOfFiles = 0;
+                    $overflow = false;
+                    $files = ftp_nlist($ftp_conn, $path);
+                    foreach ($files as $file) {
+                        if ($file == "." || $file == "..") {
+                            continue;
+                        }
+                        if ($numberOfFiles >= getAppEnvVar("COUNT_FILE_MAX")) {
+                            $overflow = true;
+                            break;
+                        }
+                        $size += ftp_size($ftp_conn, $file);
+                        $numberOfFiles++;
+                    }
+                    
+
+                    //close connection
+                    ftp_close($ftp_conn);
+
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'type' => 'folder',
+                            'size' => $size,
+                            'numberOfFiles' => $numberOfFiles,
+                            'overflow' => $overflow,
+                            'driveType' => "ftp",
+                        ]
+                    ], 'json');
+                }
+            } else if ($type == "file") {
+                //size, dates
+
+                if ($driveType == "local") {
+                    $drivePath = $driveCredentials["path"];
+                    $path = $drivePath . $path . "/" . $file;
+
+                    //if running on windows, replace / with \
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        //get first 3 chars of __DIR__
+                        $dir = substr(__DIR__, 0, 3);
+                        if ($path == "/") {
+                            $path = $dir;
+                        } else {
+                            //remove first char
+                            $path = substr($path, 1);
+                            $path = $dir . str_replace("/", "\\", $path);
+                        }
+                    }
+
+                    //check if file exists
+                    if (!file_exists($path)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'message' => 'File does not exist'
+                            ]
+                        ], 'json');
+                    }
+
+                    //get size
+                    $size = filesize($path);
+
+                    //get dates
+                    $creationDate = date("Y-m-d H:i:s", filectime($path));
+                    $lastModifiedDate = date("Y-m-d H:i:s", filemtime($path));
+
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'type' => 'file',
+                            'size' => $size,
+                            'creationDate' => $creationDate,
+                            'lastModifiedDate' => $lastModifiedDate,
+                            'driveType' => "local",
+                        ]
+                    ], 'json');
+
+                } else if ($driveType == "ftp") {
+                    $drivePath = $driveCredentials["path"];
+                    $serverAddress = $driveCredentials["serverAddress"];
+                    $port = $driveCredentials["port"];
+                    $username = $driveCredentials["username"];
+                    $password = $driveCredentials["password"];
+
+                    //try to connect
+                    $ftp_conn = ftp_connect($serverAddress, $port, 10);
+                    if (!$ftp_conn) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-connecting-to-server',
+                                'message' => 'Error connecting to server'
+                            ]
+                        ], 'json');
+                    }
+
+                    //try to login
+                    if (!ftp_login($ftp_conn, $username, $password)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-logging-in',
+                                'message' => 'Error logging in'
+                            ]
+                        ], 'json');
+                    }
+
+                    //get size
+                    $size = ftp_size($ftp_conn, $path . "/" . $file);
+
+                    //close connection
+                    ftp_close($ftp_conn);
+
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'type' => 'file',
+                            'size' => $size,
+                            'driveType' => "ftp",
+                        ]
+                    ], 'json');
+                }
+
+            }
+        }
+    });
+
+    function pingServer($serverAddress, $port) {
+        $start = microtime(true);
+        $file = @fsockopen($serverAddress, $port, $errno, $errstr, 10);
+        $stop = microtime(true);
+        $status = 0;
+
+        if (!$file) {
+            $status = -1;  // Site is down
+        } else {
+            fclose($file);
+            $status = ($stop - $start) * 1000;
+            $status = floor($status);
+        }
+
+        return $status;
+    }
 ?>

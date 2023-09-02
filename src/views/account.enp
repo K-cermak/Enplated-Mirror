@@ -24,8 +24,7 @@
             <span class="badge text-bg-info">User</span>
         @endif
     </h4>
-    <button class="btn btn-primary mt-3" id="changePasswordRun"><i class="bi bi-person-fill-lock"></i> baz
-        Change password</button>
+    <button class="btn btn-primary mt-3" id="changePasswordRun"><i class="bi bi-person-fill-lock"></i> Change password</button>
 </div>
 
 <div class="modal fade" tabindex="-1" id="changeName">

@@ -17,7 +17,10 @@
                 </div>
             </div>
             <div>
-                <div class="row folders mt-3"></div>
+                <div class="row folders mt-3 mb-5"></div>
+            </div>
+            <div class="infoPanel border-top w-100 ps-2">
+                <small class="text-muted infoData">No file selected.</small>
             </div>
         </div>
     </div>
@@ -32,7 +35,10 @@
                 </div>
             </div>
             <div>
-                <div class="row folders mt-3"></div>
+                <div class="row folders mt-3 mb-5"></div>
+            </div>
+            <div class="infoPanel border-top w-100 ps-2">
+                <small class="text-muted infoData">No file selected.</small>
             </div>
         </div>
     </div>
@@ -108,6 +114,11 @@
         text-align: left;
         font-weight: 200;
         line-height: 1.5;
+    }
+    .infoPanel {
+        position: absolute;
+        bottom: 0;
+        left: 0;
     }
 </style>
 

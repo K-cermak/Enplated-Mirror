@@ -146,7 +146,7 @@
 </div>
 
 
-<div class="modal fade" tabindex="-1" id="changeprivilegeLevel">
+<div class="modal fade" tabindex="-1" id="changePrivilegeLevel">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -154,10 +154,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="{{ env("BASE_URL") }}/dashboard/users?changeprivilegeLevel" method="POST">
+                <form action="{{ env("BASE_URL") }}/dashboard/users?changePrivilegeLevel" method="POST">
                     <input type="hidden" name="userId" id="userIdprivilegeLevel" value="">
                     <p>When permissions are set to <strong>Blocked</strong>, the user will be logged out and will no longer be able to log in to their account.</p>
-                    <select class="form-select" id="newprivilegeLevel" name="newprivilegeLevel">
+                    <select class="form-select" id="newPrivilegeLevel" name="newPrivilegeLevel">
                         <option value="admin">Admin</option>
                         <option value="user">User</option>
                         <option value="blocked">Blocked</option>
@@ -182,7 +182,7 @@
                 <form action="{{ env("BASE_URL") }}/dashboard/users?changePassword" method="POST">
                     <input type="hidden" name="userId" id="userIdChangePassword" value="">
                     <div class="floating-label-group mt-5">
-                        <input type="password" id="newPassword" name="newPassword" class="form-control" minlength="6" placeholder=" " required>
+                        <input type="password" id="newPasswordReset" name="newPassword" class="form-control" minlength="6" placeholder=" " required>
                         <label class="floating-label">New Password</label>
                     </div>
 
@@ -219,12 +219,11 @@
 
         document.querySelectorAll(".changePrivilegeRun").forEach(function(element) {
             element.addEventListener("click", function() {
-                var modal = new bootstrap.Modal(document.querySelector("#changeprivilegeLevel"));
+                var modal = new bootstrap.Modal(document.querySelector("#changePrivilegeLevel"));
                 modal.show();
 
                 document.querySelector("#userIdprivilegeLevel").value = element.getAttribute("dataId");
-                console.log(element.parentElement.parentElement.parentElement.parentElement.querySelector(".privilegeBadge").innerText.toLowerCase());
-                document.querySelector("#newprivilegeLevel").value = element.parentElement.parentElement.parentElement.parentElement.querySelector(".privilegeBadge").innerText.toLowerCase();
+                document.querySelector("#newPrivilegeLevel").value = element.parentElement.parentElement.parentElement.parentElement.querySelector(".privilegeBadge").innerText.toLowerCase();
             });
         });
 

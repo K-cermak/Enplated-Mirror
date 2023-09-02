@@ -143,7 +143,7 @@ function generateFolders(panel) {
 
 
                 let data =
-                `<div class="card text-center folderDataDrive m-1" style="width: 8rem;">
+                `<div class="card text-center folderDataDrive m-1" style="width: 7rem;">
                     <img class="card-img-top mx-auto" src="${icon}" alt="Folder icon" style="max-width:4rem;">
                     <div class="card-body folderName">
                         <h6 dataId='${drives[i]["id"]}' accessLevel='${drives[i]["accessLevel"]}'>${drives[i]["driveName"]}</h6>
@@ -170,12 +170,18 @@ function generateFolders(panel) {
 
             for (let i = 0; i < files.length; i++) {
                 let icon = renderExtension(files[i]);
+                let fullName = files[i];
                 let data;
+
+                //if file name is too long, cut it, keep extension
+                if (files[i].length > 15 && icon != "folder.svg") {
+                    files[i] = files[i].substring(0, 15) + "..." + files[i].split('.').pop();
+                }
 
                 if (icon == "folder.svg") {
                     data =
-                        `<div class="card text-center folderDataFolder m-1" style="width: 8rem;">
-                            <img class="card-img-top mx-auto" src="${ baseUrl }/public/icons/${renderExtension(files[i])}" alt="Folder icon" style="max-width:4rem;">
+                        `<div class="card text-center folderDataFolder m-1" style="width: 7rem;">
+                            <img class="card-img-top mx-auto" src="${ baseUrl }/public/icons/${icon}" alt="Folder icon" style="max-width:4rem;">
                             <div class="card-body folderName">
                                 <h6>${files[i]}</h6>
                             </div>
@@ -183,10 +189,10 @@ function generateFolders(panel) {
 
                 } else {
                     data =
-                        `<div class="card text-center folderDataFile m-1" style="width: 8rem;">
-                            <img class="card-img-top mx-auto" src="${ baseUrl }/public/icons/${renderExtension(files[i])}" alt="File icon" style="max-width:4rem;">
+                        `<div class="card text-center folderDataFile m-1" style="width: 7rem;">
+                            <img class="card-img-top mx-auto" src="${ baseUrl }/public/icons/${icon}" alt="File icon" style="max-width:4rem;">
                             <div class="card-body folderName">
-                                <h6>${files[i]}</h6>
+                                <h6 fullName='${fullName}'>${files[i]}</h6>
                             </div>
                         </div>`;
                 }
@@ -198,6 +204,26 @@ function generateFolders(panel) {
             }
             selectFolder(panel);
             generatePath(panel);
+        }
+
+        if (panel == 1) {
+            document.querySelector(".mainDrive .infoData").innerHTML = "No file selected.";
+            if (document.querySelectorAll(".mainDrive .folderDataFile").length > 0) {
+                let plural = "s";
+                if (document.querySelectorAll(".mainDrive .folderDataFile").length == 1) {
+                    plural = "";
+                }
+                document.querySelector(".mainDrive .infoData").innerHTML += " " + document.querySelectorAll(".mainDrive .folderDataFile").length + " file"+plural+" in folder.";
+            }
+        } else if (panel == 2) {
+            document.querySelector(".secondDrive .infoData").innerHTML = "No file selected.";
+            if (document.querySelectorAll(".secondDrive .folderDataFile").length > 0) {
+                let plural = "s";
+                if (document.querySelectorAll(".secondDrive .folderDataFile").length == 1) {
+                    plural = "";
+                }
+                document.querySelector(".secondDrive .infoData").innerHTML += " " + document.querySelectorAll(".secondDrive .folderDataFile").length + " file"+plural+" in folder.";
+            }
         }
     })
     .catch(function (error) {
@@ -288,7 +314,7 @@ function setIcons(panel) {
     }
 }
 
-//FOLDER OR DRIVE CLICK
+//FOLDER OR DRIVE OR FILE CLICK
 function selectDrive(panel) {
     let folderDataDrives;
     if (panel == 1) {
@@ -298,6 +324,8 @@ function selectDrive(panel) {
     }
     folderDataDrives.forEach(function (folderDataDrive) {
         folderDataDrive.addEventListener("click", event => {
+            getFileInfo(panel, folderDataDrive.querySelector(".folderName h6").getAttribute("dataId"), "drive");
+
             deselectAllClear(panel);
             folderDataDrive.classList.add('selectedItem');
             event.stopPropagation();
@@ -323,6 +351,8 @@ function selectFolder(panel) {
 
     folderDataFolders.forEach(function (folderDataFolder) {
         folderDataFolder.addEventListener("click", event => {
+            getFileInfo(panel, folderDataFolder.querySelector(".folderName").innerText, "folder");
+
             deselectAllClear(panel);
             folderDataFolder.classList.add('selectedItem');
             event.stopPropagation();
@@ -347,6 +377,8 @@ function selectFiles(panel) {
 
     folderDataFiles.forEach(function (folderDataFile) {
         folderDataFile.addEventListener("click", event => {
+            getFileInfo(panel, folderDataFile.querySelector(".folderName h6").getAttribute("fullName"), "file");
+
             deselectAllClear(panel);
             folderDataFile.classList.add('selectedItem');
             event.stopPropagation();
@@ -356,13 +388,139 @@ function selectFiles(panel) {
 
 function deselectAllClear(panel) {
     if (panel == 1) {
+        document.querySelector(".mainDrive .infoData").innerHTML = "No file selected.";
         if (document.querySelector(".mainDrive .selectedItem")) {
             document.querySelector(".mainDrive .selectedItem").classList.remove('selectedItem');
         }
+        if (document.querySelectorAll(".mainDrive .folderDataFile").length > 0) {
+            let plural = "s";
+            if (document.querySelectorAll(".mainDrive .folderDataFile").length == 1) {
+                plural = "";
+            }
+            document.querySelector(".mainDrive .infoData").innerHTML += " " + document.querySelectorAll(".mainDrive .folderDataFile").length + " file"+plural+" in folder.";
+        }
     } else if (panel == 2) {
+        document.querySelector(".secondDrive .infoData").innerHTML = "No file selected.";
         if (document.querySelector(".secondDrive .selectedItem")) {
             document.querySelector(".secondDrive .selectedItem").classList.remove('selectedItem');
         }
+        if (document.querySelectorAll(".secondDrive .folderDataFile").length > 0) {
+            let plural = "s";
+            if (document.querySelectorAll(".secondDrive .folderDataFile").length == 1) {
+                plural = "";
+            }
+            document.querySelector(".secondDrive .infoData").innerHTML += " " + document.querySelectorAll(".secondDrive .folderDataFile").length + " file"+plural+" in folder.";
+        }
+    }
+}
+
+function getFileInfo(panel, nameOfElement, type) {
+    if (type == "drive") {
+        axios.post(baseUrl + '/api/fileViewer/getFileInfo', {
+            drive : nameOfElement,
+            type : "drive"
+        })
+        .then(function (response) {
+            let data = "";
+            if (response.data.apiResponse.driveType == "local") {
+                data = "Drive Type: <strong>Local</strong>, Access Level: <strong>" + response.data.apiResponse.accessLevel + "</strong>";
+            } else if (response.data.apiResponse.driveType == "ftp") {
+                data = "Drive Type: <strong>FTP</strong>, Access Level: <strong>" + response.data.apiResponse.accessLevel + "</strong>, Ping: <strong>" + response.data.apiResponse.ping + " ms</strong>";
+            }
+
+            if (panel == 1) {
+                document.querySelector(".mainDrive .infoData").innerHTML = data;
+            } else if (panel == 2) {
+                document.querySelector(".secondDrive .infoData").innerHTML = data;
+            }
+        });
+
+    } else if (type == "folder") {
+        axios.post(baseUrl + '/api/fileViewer/getFileInfo', {
+            drive : sessionStorage.getItem("currentDrive" + panel),
+            type : "folder",
+            path : sessionStorage.getItem("currentPath" + panel) + nameOfElement
+        })
+        .then (function (response) {
+            let driveType = response.data.apiResponse.driveType;
+            let numberOfFiles = response.data.apiResponse.numberOfFiles;
+            let overflow = response.data.apiResponse.overflow;
+
+            let size = response.data.apiResponse.size;
+            let sizeInMb = size / 1024 / 1024; //MiB
+
+            size = size.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "&thinsp;");
+            sizeInMb = sizeInMb.toFixed(2);
+            sizeInMb = sizeInMb.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "&thinsp;");
+
+
+            let data = "";
+
+            if (overflow == true) {
+                data += "Number of files inside: <strong>More than " + numberOfFiles + "</strong>, ";
+                data += "Size: <strong data-bs-toggle='tooltip' data-bs-placement='top' title='More than " + size + " B, which is equivalent to more than " + sizeInMb + " MiB.'>More than " + sizeInMb + " MB</strong>";
+            } else {
+                data += "Number of files inside: <strong>" + numberOfFiles + "</strong>, ";
+                data += "Size: <strong data-bs-toggle='tooltip' data-bs-placement='top' title='" + size + " B, which is equivalent to " + sizeInMb + " MiB.'>" + sizeInMb + " MB</strong>";
+            }
+
+            if (driveType == "local") {
+                data += "<br>Created on: <strong>" + response.data.apiResponse.creationDate + "</strong>, ";
+                data += "Last modified on: <strong>" + response.data.apiResponse.lastModifiedDate + "</strong>";
+            } else if (driveType == "ftp") {
+                data += " (Notice: FTP does not count recursively.)"
+            }
+
+            if (panel == 1) {
+                document.querySelector(".mainDrive .infoData").innerHTML = data;
+            } else if (panel == 2) {
+                document.querySelector(".secondDrive .infoData").innerHTML = data;
+            }
+
+            //run tooltip
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        });
+
+    } else if (type == "file") {
+        axios.post(baseUrl + '/api/fileViewer/getFileInfo', {
+            drive : sessionStorage.getItem("currentDrive" + panel),
+            type : "file",
+            path : sessionStorage.getItem("currentPath" + panel),
+            file : nameOfElement
+        })
+        .then (function (response) {
+            let driveType = response.data.apiResponse.driveType;
+
+            let size = response.data.apiResponse.size;
+            let sizeInMb = size / 1024 / 1024; //MiB
+
+            size = size.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "&thinsp;");
+            sizeInMb = sizeInMb.toFixed(2);
+            sizeInMb = sizeInMb.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "&thinsp;");
+
+            let data = "";
+            data += "Size: <strong data-bs-toggle='tooltip' data-bs-placement='top' title='" + size + " B, which is equivalent to " + sizeInMb + " MiB.'>" + sizeInMb + " MB</strong>";
+
+            if (driveType == "local") {
+                data += "<br>Created on: <strong>" + response.data.apiResponse.creationDate + "</strong>, ";
+                data += "Last modified on: <strong>" + response.data.apiResponse.lastModifiedDate + "</strong>";
+            }
+
+            if (panel == 1) {
+                document.querySelector(".mainDrive .infoData").innerHTML = data;
+            } else if (panel == 2) {
+                document.querySelector(".secondDrive .infoData").innerHTML = data;
+            }
+
+            //run tooltip
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+        });
     }
 }
 
