@@ -3,6 +3,8 @@
 <script src="{{ env('BASE_URL') }}/public/js/fileExplorer.js"></script>
 <script>
     let baseUrl = "{{ env('BASE_URL') }}";
+    let allowPreviews = "{{ env('ALLOW_PREVIEWS') }}";
+    let allowPreviewsFtp = "{{ env('ALLOW_PREVIEWS_FTP') }}";
 </script>
 
 <div class="d-flex flex-row">

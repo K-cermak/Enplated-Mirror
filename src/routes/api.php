@@ -1474,4 +1474,237 @@
 
         return $status;
     }
+
+    checkRoute('POST', '/api/fileViewer/imagePreview', function() {
+        redirectNotLogin();
+
+        $_POST = json_decode(file_get_contents("php://input"), true); //because of axios
+        
+        if (isset($_POST["drive"]) && !empty($_POST["drive"]) && isset($_POST["path"]) && !empty($_POST["path"]) && isset($_POST["file"]) && !empty($_POST["file"]) ) {
+            $drive = $_POST["drive"];
+            $path = $_POST["path"];
+            $file = $_POST["file"];
+
+            $drives = modelCall("drives", "getDrivesWithAccess", []);
+            $drivesCredential = "";
+
+            //check if has access
+            $hasAccess = false;
+            for ($i = 0; $i < count($drives); $i++) {
+                if ($drives[$i]["id"] == $drive) {
+                    if ($drives[$i]["accessLevel"] == "edit" || $drives[$i]["accessLevel"] == "view") {
+                        $hasAccess = true;
+                        $drivesCredential = $drives[$i]["driveCredentials"];
+                    }
+                    break;
+                }
+            }
+
+            if (!$hasAccess) {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'You do not have access to this drive'
+                    ]
+                ], 'json');
+            }
+
+            //check if path ir file doesnt contain .. or /../
+            if (strpos($path, "..") !== false || strpos($path, "/../") !== false || strpos($file, "..") !== false || strpos($file, "/../") !== false) {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Invalid path or file'
+                    ]
+                ], 'json');
+            }
+
+            //check if file extension is image
+            $extension = pathinfo($file, PATHINFO_EXTENSION);
+            if (!in_array($extension, ["jpg", "jpeg", "png", "gif"])) {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'File is not an image'
+                    ]
+                ], 'json');
+            }
+
+            $driveCredentials = json_decode($drivesCredential, true);
+            $driveType = $driveCredentials["type"];
+
+            if ($driveType == "local") {
+                $drivePath = $driveCredentials["path"];
+                $path = $drivePath . $path . "/" . $file;
+
+                //if running on windows, replace / with \
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    //get first 3 chars of __DIR__
+                    $dir = substr(__DIR__, 0, 3);
+                    if ($path == "/") {
+                        $path = $dir;
+                    } else {
+                        //remove first char
+                        $path = substr($path, 1);
+                        $path = $dir . str_replace("/", "\\", $path);
+                    }
+                }
+
+                //check if file exists
+                if (!file_exists($path)) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'File does not exist'
+                        ]
+                    ], 'json');
+                }
+
+                $maxWidth = 500;
+                $maxHeight = 500;
+
+                // open file
+                if ($extension == "jpg" || $extension == "jpeg") {
+                    $image = imagecreatefromjpeg($path);
+                } else if ($extension == "png") {
+                    $image = imagecreatefrompng($path);
+                } else if ($extension == "gif") {
+                    $image = imagecreatefromgif($path);
+                };
+
+                $originalWidth = imagesx($image);
+                $originalHeight = imagesy($image);
+
+                if ($originalWidth > $maxWidth || $originalHeight > $maxHeight) {
+                    $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+                    $newWidth = $originalWidth * $ratio;
+                    $newHeight = $originalHeight * $ratio;
+                } else {
+                    $newWidth = $originalWidth;
+                    $newHeight = $originalHeight;
+                }
+                //convert to int
+                $newWidth = (int) $newWidth;
+                $newHeight = (int) $newHeight;
+
+
+                $thumbnail = imagecreatetruecolor($newWidth, $newHeight);
+
+                imagecopyresampled($thumbnail, $image, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+
+                if ($extension == "jpg" || $extension == "jpeg") {
+                    header('Content-Type: image/jpeg');
+                    imagejpeg($thumbnail);
+                } else if ($extension == "png") {
+                    header('Content-Type: image/png');
+                    imagepng($thumbnail);
+                } else if ($extension == "gif") {
+                    header('Content-Type: image/gif');
+                    imagegif($thumbnail);
+                }
+
+                imagedestroy($image);
+                imagedestroy($thumbnail);
+                die();
+
+            } else if ($driveType == "ftp") {
+                $drivePath = $driveCredentials["path"];
+                $serverAddress = $driveCredentials["serverAddress"];
+                $port = $driveCredentials["port"];
+                $username = $driveCredentials["username"];
+                $password = $driveCredentials["password"];
+
+                //try to connect
+                $ftp_conn = ftp_connect($serverAddress, $port, 10);
+                if (!$ftp_conn) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'type' => 'error-connecting-to-server',
+                            'message' => 'Error connecting to server'
+                        ]
+                    ], 'json');
+                }
+
+                //try to login
+                if (!ftp_login($ftp_conn, $username, $password)) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'type' => 'error-logging-in',
+                            'message' => 'Error logging in'
+                        ]
+                    ], 'json');
+                }
+
+                //get file
+                $tempFile = tempnam(sys_get_temp_dir(), 'temp');
+                if (!ftp_get($ftp_conn, $tempFile, $path . "/" . $file, FTP_BINARY)) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Error getting file'
+                        ]
+                    ], 'json');
+                }
+
+                //close connection
+                ftp_close($ftp_conn);
+
+                $maxWidth = 500;
+                $maxHeight = 500;
+
+                // open file
+                if ($extension == "jpg" || $extension == "jpeg") {
+                    $image = imagecreatefromjpeg($tempFile);
+                } else if ($extension == "png") {
+                    $image = imagecreatefrompng($tempFile);
+                } else if ($extension == "gif") {
+                    $image = imagecreatefromgif($tempFile);
+                };
+
+                $originalWidth = imagesx($image);
+                $originalHeight = imagesy($image);
+
+                if ($originalWidth > $maxWidth || $originalHeight > $maxHeight) {
+                    $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+                    $newWidth = $originalWidth * $ratio;
+                    $newHeight = $originalHeight * $ratio;
+                } else {
+                    $newWidth = $originalWidth;
+                    $newHeight = $originalHeight;
+                }
+                //convert to int
+                $newWidth = (int) $newWidth;
+                $newHeight = (int) $newHeight;
+
+
+                $thumbnail = imagecreatetruecolor($newWidth, $newHeight);
+
+                imagecopyresampled($thumbnail, $image, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+
+                if ($extension == "jpg" || $extension == "jpeg") {
+                    header('Content-Type: image/jpeg');
+                    imagejpeg($thumbnail);
+                } else if ($extension == "png") {
+                    header('Content-Type: image/png');
+                    imagepng($thumbnail);
+                } else if ($extension == "gif") {
+                    header('Content-Type: image/gif');
+                    imagegif($thumbnail);
+                }
+
+                imagedestroy($image);
+                imagedestroy($thumbnail);
+                die();
+            }
+        }
+    });
 ?>

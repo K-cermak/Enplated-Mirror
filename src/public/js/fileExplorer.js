@@ -12,6 +12,9 @@ for (let i = 1; i < 3; i++) {
     if (sessionStorage.getItem("driveAccessLevel" + i) == null) {
         sessionStorage.setItem("driveAccessLevel" + i, "view");
     }
+    if (sessionStorage.getItem("driveType" + i) == null) {
+        sessionStorage.setItem("driveType" + i, "local");
+    }
 }
 
 if (sessionStorage.getItem("splittedView") == null) {
@@ -126,14 +129,17 @@ function generateFolders(panel) {
 
             for (let i = 0; i < drives.length; i++) {
                 let icon = "";
+                let driveType = "";
 
                 if (drives[i]["type"] == "local") {
+                    driveType = "local";
                     if (drives[i]["accessLevel"] == "edit") {
                         icon = baseUrl + "/public/icons/drive.svg";
                     } else {
                         icon = baseUrl + "/public/icons/drive-viewonly.svg";
                     }
                 } else if (drives[i]["type"] == "ftp") {
+                    driveType = "ftp";
                     if (drives[i]["accessLevel"] == "edit") {
                         icon = baseUrl + "/public/icons/ftp.svg";
                     } else {
@@ -143,7 +149,7 @@ function generateFolders(panel) {
 
 
                 let data =
-                `<div class="card text-center folderDataDrive m-1" style="width: 7rem;">
+                `<div class="card text-center folderDataDrive m-1" style="width: 7rem;" driveType='${driveType}'>
                     <img class="card-img-top mx-auto" src="${icon}" alt="Folder icon" style="max-width:4rem;">
                     <div class="card-body folderName">
                         <h6 dataId='${drives[i]["id"]}' accessLevel='${drives[i]["accessLevel"]}'>${drives[i]["driveName"]}</h6>
@@ -201,6 +207,9 @@ function generateFolders(panel) {
                 } else if (panel == 2) {
                     document.querySelector(".secondDrive .folders").innerHTML += data;
                 }
+            }
+            if ((sessionStorage.getItem("driveType" + panel) == "local" && allowPreviews == true) || sessionStorage.getItem("driveType" + panel) == "ftp" && allowPreviewsFtp == true) {
+                renderImages(panel);
             }
             selectFolder(panel);
             generatePath(panel);
@@ -336,6 +345,7 @@ function selectDrive(panel) {
             sessionStorage.setItem("currentDriveName" + panel, folderDataDrive.querySelector(".folderName h6").innerText);
             sessionStorage.setItem("driveAccessLevel" + panel, folderDataDrive.querySelector(".folderName h6").getAttribute("accessLevel"));
             sessionStorage.setItem("currentPath" + panel, "/");
+            sessionStorage.setItem("driveType" + panel, folderDataDrive.getAttribute("driveType"));
             generateFolders(panel);
         });
     });
@@ -639,4 +649,49 @@ function renderExtension(filename) {
     } while (false);
 
     return icon;
+}
+
+function renderImages(panel) {
+    let images;
+    if (panel == 1) {
+        images = document.querySelectorAll('.mainDrive .folderDataFile');
+    } else if (panel == 2) {
+        images = document.querySelectorAll('.secondDrive .folderDataFile');
+    }
+
+    let i = 0;
+    let drive = sessionStorage.getItem("currentDrive" + panel);
+    let path = sessionStorage.getItem("currentPath" + panel);
+
+
+    images.forEach(function (image) {
+        let extension = image.querySelector(".folderName h6").getAttribute("fullName").split('.').pop();
+        extension = extension.toLowerCase();
+        if (extension == "jpg" || extension == "jpeg" || extension == "png" || extension == "gif") {
+            setTimeout(function() {
+                if (drive != sessionStorage.getItem("currentDrive" + panel) || path != sessionStorage.getItem("currentPath" + panel)) {
+                    return;
+                }
+
+                axios.post(baseUrl + '/api/fileViewer/imagePreview', {
+                    drive : drive,
+                    path : path,
+                    file : image.querySelector(".folderName h6").getAttribute("fullName"),
+                }, { responseType: 'blob' })
+                .then (function (response) {
+                    var reader = new window.FileReader();
+                    reader.readAsDataURL(response.data); 
+                    reader.onload = function() {
+                        var imageDataUrl = reader.result;
+                        image.querySelector("img").src = imageDataUrl;
+                        image.querySelector("img").style.width = "auto";
+                        image.querySelector("img").style.height = "auto";
+                        image.querySelector("img").style.maxHeight = "65px";
+                        image.querySelector("img").style.maxWidth = "100%";
+                    }
+                });
+            }, i * 1000);
+            i++;
+        }
+    });
 }
