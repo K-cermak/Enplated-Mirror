@@ -285,7 +285,7 @@ function generatePath(panel) {
             goPath[i].addEventListener("click", event => {
                 sessionStorage.setItem("currentPath" + panel, "/");
                 for (let j = 0; j <= i; j++) {
-                    sessionStorage.setItem("currentPath", sessionStorage.getItem("currentPath" + panel) + goPath[j].innerText + "/");
+                    sessionStorage.setItem("currentPath" + panel, sessionStorage.getItem("currentPath" + panel) + goPath[j].innerText + "/");
                 }
                 generateFolders(panel);
             });
