@@ -1,4 +1,4 @@
-//PROM SETTINGS
+//SESSION VARS SETTINGS
 for (let i = 1; i < 3; i++) {
     if (sessionStorage.getItem("currentPath" + i) == null) {
         sessionStorage.setItem("currentPath" + i, "#drives#");
@@ -64,10 +64,48 @@ window.addEventListener("load", function() {
         });
     });
 
-
+    var uploadFileModal = new bootstrap.Modal(document.querySelector("#uploadFile"));
     var newFolderModal = new bootstrap.Modal(document.querySelector("#newFolder"));
     var selectedFolderModal;
 
+    //close of modal
+    uploadFileModal._element.addEventListener('hidden.bs.modal', function () {
+        generateFolders(1);
+        if (sessionStorage.getItem("splittedView") == "true") {
+            generateFolders(2);
+        }
+    });
+    
+    //filepond
+    const inputElement = document.querySelector('#filepondInput');
+    const pond = FilePond.create(inputElement);
+    FilePond.setOptions({
+        server: {
+            allowMultiple: true,
+            instantUpload: true,
+            allowRemove: false,
+            allowRevert: false,
+            process: {
+                url: './api/fileViewer/uploadFile',
+                method: 'POST',
+                withCredentials: false,
+                headers: {},
+                ondata: (formData) => {
+                    formData.append("path", sessionStorage.getItem("currentPath" + selectedFolderModal));
+                    formData.append("drive", sessionStorage.getItem("currentDrive" + selectedFolderModal));
+                    return formData;
+                },
+            },
+            revert: null,
+        }
+    });
+
+    document.querySelectorAll(".uploadButton").forEach(function (addUploadButton) {
+        addUploadButton.addEventListener("click", event => {
+            selectedFolderModal = event.target.closest(".tabInfo").getAttribute("dataId");
+            uploadFileModal.show();
+        });
+    });
     document.querySelectorAll(".addFolderButton").forEach(function (addFolderButton) {
         addFolderButton.addEventListener("click", event => {
             selectedFolderModal = event.target.closest(".tabInfo").getAttribute("dataId");
@@ -106,25 +144,22 @@ window.addEventListener("load", function() {
 });
 
 function generateFolders(panel) {
+    let selector = "mainDrive";
+    if (panel == 2) {
+        selector = "secondDrive";
+    }
+
     axios.post(baseUrl + '/api/fileViewer/getContent', {
         path : sessionStorage.getItem("currentPath" + panel),
         drive : sessionStorage.getItem("currentDrive" + panel)
     })
     .then(function (response) {
-        if (panel == 1) {
-            document.querySelector(".mainDrive .folders").innerHTML = "";
-        } else if (panel == 2) {
-            document.querySelector(".secondDrive .folders").innerHTML = "";
-        }
-
+        document.querySelector("." + selector + " .folders").innerHTML = "";
+        
         if (response.data.apiResponse.type == "drives") {
             drives = response.data.apiResponse.data;
             if (drives.length == 0) {
-                if (panel == 1) {
-                    document.querySelector(".mainDrive .folders").innerHTML = "<p class='text-center'>No drives found.</p>";
-                } else if (panel == 2) {
-                    document.querySelector(".secondDrive .folders").innerHTML = "<p class='text-center'>No drives found.</p>";
-                }
+                document.querySelector("." + selector + " .folders").innerHTML = "<p class='text-center'>No drives found.</p>";
             }
 
             for (let i = 0; i < drives.length; i++) {
@@ -155,11 +190,9 @@ function generateFolders(panel) {
                         <h6 dataId='${drives[i]["id"]}' accessLevel='${drives[i]["accessLevel"]}'>${drives[i]["driveName"]}</h6>
                     </div>
                 </div>`;
-                if (panel == 1) {
-                    document.querySelector(".mainDrive .folders").innerHTML += data;
-                } else if (panel == 2) {
-                    document.querySelector(".secondDrive .folders").innerHTML += data;
-                }
+
+                document.querySelector("." + selector + " .folders").innerHTML += data;
+
             }
             selectDrive(panel);
             generatePath(panel);
@@ -167,11 +200,7 @@ function generateFolders(panel) {
         } else {
             let files = response.data.apiResponse.data;
             if (files.length == 0) {
-                if (panel == 1) {
-                    document.querySelector(".mainDrive .folders").innerHTML = "<p class='text-center'>No data found.</p>";
-                } else if (panel == 2) {
-                    document.querySelector(".secondDrive .folders").innerHTML = "<p class='text-center'>No data found.</p>";
-                }
+                document.querySelector("." + selector + " .folders").innerHTML = "<p class='text-center'>No data found.</p>";
             }
 
             for (let i = 0; i < files.length; i++) {
@@ -189,7 +218,7 @@ function generateFolders(panel) {
                         `<div class="card text-center folderDataFolder m-1" style="width: 7rem;">
                             <img class="card-img-top mx-auto" src="${ baseUrl }/public/icons/${icon}" alt="Folder icon" style="max-width:4rem;">
                             <div class="card-body folderName">
-                                <h6>${files[i]}</h6>
+                                <h6 fullName='${files[i]}'>${files[i]}</h6>
                             </div>
                         </div>`;
 
@@ -202,11 +231,7 @@ function generateFolders(panel) {
                             </div>
                         </div>`;
                 }
-                if (panel == 1) {
-                    document.querySelector(".mainDrive .folders").innerHTML += data;
-                } else if (panel == 2) {
-                    document.querySelector(".secondDrive .folders").innerHTML += data;
-                }
+                document.querySelector("." + selector + " .folders").innerHTML += data;
             }
             if ((sessionStorage.getItem("driveType" + panel) == "local" && allowPreviews == true) || sessionStorage.getItem("driveType" + panel) == "ftp" && allowPreviewsFtp == true) {
                 renderImages(panel);
@@ -215,25 +240,16 @@ function generateFolders(panel) {
             generatePath(panel);
         }
 
-        if (panel == 1) {
-            document.querySelector(".mainDrive .infoData").innerHTML = "No file selected.";
-            if (document.querySelectorAll(".mainDrive .folderDataFile").length > 0) {
-                let plural = "s";
-                if (document.querySelectorAll(".mainDrive .folderDataFile").length == 1) {
-                    plural = "";
-                }
-                document.querySelector(".mainDrive .infoData").innerHTML += " " + document.querySelectorAll(".mainDrive .folderDataFile").length + " file"+plural+" in folder.";
+
+        document.querySelector("." + selector + " .infoData").innerHTML = "No file selected.";
+        if (document.querySelectorAll("." + selector + " .folderDataFile").length > 0) {
+            let plural = "s";
+            if (document.querySelectorAll("." + selector + " .folderDataFile").length == 1) {
+                plural = "";
             }
-        } else if (panel == 2) {
-            document.querySelector(".secondDrive .infoData").innerHTML = "No file selected.";
-            if (document.querySelectorAll(".secondDrive .folderDataFile").length > 0) {
-                let plural = "s";
-                if (document.querySelectorAll(".secondDrive .folderDataFile").length == 1) {
-                    plural = "";
-                }
-                document.querySelector(".secondDrive .infoData").innerHTML += " " + document.querySelectorAll(".secondDrive .folderDataFile").length + " file"+plural+" in folder.";
-            }
+            document.querySelector("." + selector + " .infoData").innerHTML += " " + document.querySelectorAll("." + selector + " .folderDataFile").length + " file"+plural+" in folder.";
         }
+
     })
     .catch(function (error) {
         if (error.response.data.apiResponse.type !== null && (error.response.data.apiResponse.type == "error-connecting-to-server" || error.response.data.apiResponse.type == "error-logging-in")) {
@@ -253,34 +269,32 @@ function generateFolders(panel) {
 }
 
 function generatePath(panel) {
-    let prefix = "";
-    if (panel == 1) {
-        prefix = ".mainDrive";
-    } else if (panel == 2) {
-        prefix = ".secondDrive";
+    let selector = "mainDrive";
+    if (panel == 2) {
+        selector = "secondDrive";
     }
 
-    document.querySelector(prefix + " .mainPath").innerHTML = "<button class='btn btn-secondary goDrives'>All Drives</button>";
+    document.querySelector("." + selector + " .mainPath").innerHTML = "<button class='btn btn-secondary goDrives'>All Drives</button>";
 
     if (sessionStorage.getItem("currentPath" + panel) != "#drives#") {
         //split path by /
         let path = sessionStorage.getItem("currentPath" + panel).split("/");
-        document.querySelector(prefix + " .mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
-        document.querySelector(prefix + " .mainPath").innerHTML += "<button class='btn btn-secondary goRoot'>"+sessionStorage.getItem("currentDriveName" + panel)+"</button>";
+        document.querySelector("." + selector + " .mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
+        document.querySelector("." + selector + " .mainPath").innerHTML += "<button class='btn btn-secondary goRoot'>"+sessionStorage.getItem("currentDriveName" + panel)+"</button>";
 
         for (let i = 0; i < path.length; i++) {
             if (path[i] != "") {
-                document.querySelector(prefix + " .mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
-                document.querySelector(prefix + " .mainPath").innerHTML += `<button class='btn btn-secondary goPath my-1'>${path[i]}</button>`; 
+                document.querySelector("." + selector + " .mainPath").innerHTML += '<i class="bi bi-slash-lg"></i>';
+                document.querySelector("." + selector + " .mainPath").innerHTML += `<button class='btn btn-secondary goPath my-1'>${path[i]}</button>`; 
             }
         }
     
-        document.querySelector(prefix + " .goRoot").addEventListener("click", event => {
+        document.querySelector("." + selector + " .goRoot").addEventListener("click", event => {
             sessionStorage.setItem("currentPath" + panel, "/");
             generateFolders(panel);
         });
 
-        let goPath = document.querySelectorAll(prefix + " .goPath");
+        let goPath = document.querySelectorAll("." + selector + " .goPath");
         for (let i = 0; i < goPath.length; i++) {
             goPath[i].addEventListener("click", event => {
                 sessionStorage.setItem("currentPath" + panel, "/");
@@ -292,7 +306,7 @@ function generatePath(panel) {
         }
     }
 
-    document.querySelector(prefix + " .goDrives").addEventListener("click", event => {
+    document.querySelector("." + selector + " .goDrives").addEventListener("click", event => {
         sessionStorage.setItem("currentPath" + panel, "#drives#");
         sessionStorage.setItem("currentDrive" + panel, "-1");
         generateFolders(panel);
@@ -308,18 +322,17 @@ function setIcons(panel) {
         state = false;
     }
 
+    let selector = "mainDrive";
+    if (panel == 2) {
+        selector = "secondDrive";
+    }
+
     if (state == false) {
-        if (panel == 1) {
-            document.querySelector(".mainDrive .addFolderButton").style.display = "none";
-        } else {
-            document.querySelector(".secondDrive .addFolderButton").style.display = "none";
-        }
+        document.querySelector("." + selector +  " .uploadButton").style.display = "none";
+        document.querySelector("." + selector +  " .addFolderButton").style.display = "none";
     } else {
-        if (panel == 1) {
-            document.querySelector(".mainDrive .addFolderButton").style.display = "";
-        } else {
-            document.querySelector(".secondDrive .addFolderButton").style.display = "";
-        }
+        document.querySelector("." + selector +  " .uploadButton").style.display = "";
+        document.querySelector("." + selector +  " .addFolderButton").style.display = "";
     }
 }
 
@@ -333,11 +346,11 @@ function selectDrive(panel) {
     }
     folderDataDrives.forEach(function (folderDataDrive) {
         folderDataDrive.addEventListener("click", event => {
-            getFileInfo(panel, folderDataDrive.querySelector(".folderName h6").getAttribute("dataId"), "drive");
-
             deselectAllClear(panel);
             folderDataDrive.classList.add('selectedItem');
             event.stopPropagation();
+
+            getFileInfo(panel, folderDataDrive.querySelector(".folderName h6").getAttribute("dataId"), "drive");
         });
 
         folderDataDrive.addEventListener("dblclick", event => {
@@ -361,11 +374,19 @@ function selectFolder(panel) {
 
     folderDataFolders.forEach(function (folderDataFolder) {
         folderDataFolder.addEventListener("click", event => {
-            getFileInfo(panel, folderDataFolder.querySelector(".folderName").innerText, "folder");
+            if (event.ctrlKey == false && event.metaKey == false) {
+                deselectAllClear(panel);
+            }
 
-            deselectAllClear(panel);
-            folderDataFolder.classList.add('selectedItem');
+            //if folder is already selected, deselect it
+            if (folderDataFolder.classList.contains('selectedItem') && (event.ctrlKey || event.metaKey)) {
+                folderDataFolder.classList.remove('selectedItem');
+            } else {
+                folderDataFolder.classList.add('selectedItem');
+            }
+
             event.stopPropagation();
+            getFileInfo(panel, folderDataFolder.querySelector(".folderName").innerText, "folder");
         });
 
         folderDataFolder.addEventListener("dblclick", event => {
@@ -387,45 +408,89 @@ function selectFiles(panel) {
 
     folderDataFiles.forEach(function (folderDataFile) {
         folderDataFile.addEventListener("click", event => {
-            getFileInfo(panel, folderDataFile.querySelector(".folderName h6").getAttribute("fullName"), "file");
+            if (event.ctrlKey == false && event.metaKey == false) {
+                deselectAllClear(panel);
+            }
 
-            deselectAllClear(panel);
-            folderDataFile.classList.add('selectedItem');
+            //if file is already selected, deselect it
+            if (folderDataFile.classList.contains('selectedItem') && (event.ctrlKey || event.metaKey)) {
+                folderDataFile.classList.remove('selectedItem');
+            } else {
+                folderDataFile.classList.add('selectedItem');
+            }
+
             event.stopPropagation();
+            getFileInfo(panel, folderDataFile.querySelector(".folderName h6").getAttribute("fullName"), "file");
         });
     });
 }
 
 function deselectAllClear(panel) {
-    if (panel == 1) {
-        document.querySelector(".mainDrive .infoData").innerHTML = "No file selected.";
-        if (document.querySelector(".mainDrive .selectedItem")) {
-            document.querySelector(".mainDrive .selectedItem").classList.remove('selectedItem');
-        }
-        if (document.querySelectorAll(".mainDrive .folderDataFile").length > 0) {
-            let plural = "s";
-            if (document.querySelectorAll(".mainDrive .folderDataFile").length == 1) {
-                plural = "";
-            }
-            document.querySelector(".mainDrive .infoData").innerHTML += " " + document.querySelectorAll(".mainDrive .folderDataFile").length + " file"+plural+" in folder.";
-        }
-    } else if (panel == 2) {
-        document.querySelector(".secondDrive .infoData").innerHTML = "No file selected.";
-        if (document.querySelector(".secondDrive .selectedItem")) {
-            document.querySelector(".secondDrive .selectedItem").classList.remove('selectedItem');
-        }
-        if (document.querySelectorAll(".secondDrive .folderDataFile").length > 0) {
-            let plural = "s";
-            if (document.querySelectorAll(".secondDrive .folderDataFile").length == 1) {
-                plural = "";
-            }
-            document.querySelector(".secondDrive .infoData").innerHTML += " " + document.querySelectorAll(".secondDrive .folderDataFile").length + " file"+plural+" in folder.";
-        }
+    let selector = "mainDrive";
+    if (panel == 2) {
+        selector = "secondDrive";
     }
+
+    document.querySelector("." + selector + " .infoData").innerHTML = "No file selected.";
+
+    let length = document.querySelectorAll("." + selector + " .selectedItem").length;
+    for (let i = 0; i < length; i++) {
+        document.querySelectorAll("." + selector + " .selectedItem")[0].classList.remove('selectedItem');
+    }
+
+    if (document.querySelectorAll("." + selector + " .folderDataFile").length > 0) {
+        let plural = "s";
+        if (document.querySelectorAll("." + selector + " .folderDataFile").length == 1) {
+            plural = "";
+        }
+        document.querySelector("." + selector + " .infoData").innerHTML += " " + document.querySelectorAll("." + selector + " .folderDataFile").length + " file"+plural+" in folder.";
+    }
+
 }
 
 function getFileInfo(panel, nameOfElement, type) {
-    if (type == "drive") {
+    let selector = "mainDrive";
+    if (panel == 2) {
+        selector = "secondDrive";
+    }
+
+    //multiple
+    let length = document.querySelectorAll("." + selector + " .selectedItem").length;
+    if (length > 1) {
+        //if drive type ftp
+        if (sessionStorage.getItem("driveType" + panel) == "ftp") {
+            document.querySelector("." + selector + " .infoData").innerHTML = "Selected " + length + " items.";
+        } else if (sessionStorage.getItem("driveType" + panel) == "local") {
+            let files = [];
+            for (let i = 0; i < length; i++) {
+                files.push(document.querySelectorAll("." + selector + " .selectedItem")[i].querySelector(".folderName h6").getAttribute("fullName"));
+            }
+
+            axios.post(baseUrl + '/api/fileViewer/getFileInfo', {
+                drive : sessionStorage.getItem("currentDrive" + panel),
+                type : "multiple",
+                path : sessionStorage.getItem("currentPath" + panel),
+                files : JSON.stringify(files)
+            })
+            .then(function (response) {
+                let size = response.data.apiResponse.size;
+                let sizeInMb = size / 1024 / 1024; //MiB
+    
+                size = size.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "&thinsp;");
+                sizeInMb = sizeInMb.toFixed(2);
+                sizeInMb = sizeInMb.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "&thinsp;");
+
+                document.querySelector("." + selector + " .infoData").innerHTML = "Selected " + length + " items, total size: <strong data-bs-toggle='tooltip' data-bs-placement='top' title='" + size + " B, which is equivalent to " + sizeInMb + " MiB.'>" + sizeInMb + " MB</strong>";
+            
+                //run tooltip
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl)
+                })
+            });
+            
+        }
+    } else if (type == "drive") {
         axios.post(baseUrl + '/api/fileViewer/getFileInfo', {
             drive : nameOfElement,
             type : "drive"
@@ -438,11 +503,7 @@ function getFileInfo(panel, nameOfElement, type) {
                 data = "Drive Type: <strong>FTP</strong>, Access Level: <strong>" + response.data.apiResponse.accessLevel + "</strong>, Ping: <strong>" + response.data.apiResponse.ping + " ms</strong>";
             }
 
-            if (panel == 1) {
-                document.querySelector(".mainDrive .infoData").innerHTML = data;
-            } else if (panel == 2) {
-                document.querySelector(".secondDrive .infoData").innerHTML = data;
-            }
+            document.querySelector("." + selector + " .infoData").innerHTML = data;
         });
 
     } else if (type == "folder") {
@@ -481,11 +542,7 @@ function getFileInfo(panel, nameOfElement, type) {
                 data += " (Notice: FTP does not count recursively.)"
             }
 
-            if (panel == 1) {
-                document.querySelector(".mainDrive .infoData").innerHTML = data;
-            } else if (panel == 2) {
-                document.querySelector(".secondDrive .infoData").innerHTML = data;
-            }
+            document.querySelector("." + selector + " .infoData").innerHTML = data;
 
             //run tooltip
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -519,11 +576,7 @@ function getFileInfo(panel, nameOfElement, type) {
                 data += "Last modified on: <strong>" + response.data.apiResponse.lastModifiedDate + "</strong>";
             }
 
-            if (panel == 1) {
-                document.querySelector(".mainDrive .infoData").innerHTML = data;
-            } else if (panel == 2) {
-                document.querySelector(".secondDrive .infoData").innerHTML = data;
-            }
+            document.querySelector("." + selector + " .infoData").innerHTML = data;
 
             //run tooltip
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))

@@ -888,12 +888,37 @@
                         ], 'json');
                     }
 
-                    $folders = scandir($path);
+                    $folders = glob($path . '/*', GLOB_ONLYDIR);
+                    $files = glob($path . '/*.*');
 
                     //remove . and ..
                     $folders = array_filter($folders, function($folder) {
                         return $folder != "." && $folder != "..";
                     });
+
+                    sort($folders);
+                    sort($files);
+
+                    //add files to folders
+                    for ($i = 0; $i < count($files); $i++) {
+                        array_push($folders, $files[$i]);
+                    }
+
+                    //remove path from name
+                    $folders = array_map(function($folder) use ($path) {
+                        return str_replace($path . "/", "", $folder);
+                    }, $folders);
+
+                    //reset index of array
+                    $folders = array_values($folders);
+
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'data' => $folders
+                        ]
+                    ], 'json');
+
                 } else if ($driveType == "ftp") {
                     $drivePath = $driveCredentials["path"];
                     $serverAddress = $driveCredentials["serverAddress"];
@@ -936,38 +961,38 @@
                     $folders = array_map(function($folder) use ($path) {
                         return str_replace($path, "", $folder);
                     }, $folders);
-                }
 
-                //reset index of array
-                $folders = array_values($folders);
+                    //reset index of array
+                    $folders = array_values($folders);
 
-                $files = [];
-                //if has extension, get file
-                for ($i = 0; $i < count($folders); $i++) {
-                    $extension = pathinfo($folders[$i], PATHINFO_EXTENSION);
-                    if (!empty($extension)) {
-                        array_push($files, $folders[$i]);
-                        unset($folders[$i]);
+                    $files = [];
+                    //if has extension, get file
+                    for ($i = 0; $i < count($folders); $i++) {
+                        $extension = pathinfo($folders[$i], PATHINFO_EXTENSION);
+                        if (!empty($extension)) {
+                            array_push($files, $folders[$i]);
+                            unset($folders[$i]);
+                        }
                     }
+
+                    //sort files
+                    sort($files);
+
+                    //reset index of array
+                    $folders = array_values($folders);
+
+                    //add files to folders
+                    for ($i = 0; $i < count($files); $i++) {
+                        array_push($folders, $files[$i]);
+                    }
+                    
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'success',
+                            'data' => $folders
+                        ]
+                    ], 'json');
                 }
-
-                //sort files
-                sort($files);
-
-                //reset index of array
-                $folders = array_values($folders);
-
-                //add files to folders
-                for ($i = 0; $i < count($files); $i++) {
-                    array_push($folders, $files[$i]);
-                }
-
-                resourceView([
-                    'apiResponse' => [
-                        'status' => 'success',
-                        'data' => $folders
-                    ]
-                ], 'json');
             }
         } else {
             require_once "engine/errors/403.php";
@@ -1121,9 +1146,9 @@
         
         if (isset($_POST["drive"]) && !empty($_POST["drive"]) && isset($_POST["type"]) && !empty($_POST["type"])) {
             $drive = $_POST["drive"];
-            $type = $_POST["type"]; //drive or folder or file
+            $type = $_POST["type"]; //drive or folder or file or multiple
 
-            if ($type == "folder" || $type == "file") {
+            if ($type == "folder" || $type == "file" || $type == "multiple") {
                 if (!isset($_POST["path"]) || empty($_POST["path"])) {
                     http_response_code(400);
                     resourceView([
@@ -1168,6 +1193,35 @@
                             'message' => 'Invalid file'
                         ]
                     ], 'json');
+                }
+            }
+
+            if ($type == "multiple") {
+                if (!isset($_POST["files"]) || empty($_POST["files"])) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'message' => 'Files not specified'
+                        ]
+                    ], 'json');
+                } else {
+                    $files = $_POST["files"];
+                    //json to array
+                    $files = json_decode($files, true); 
+                }
+
+                    foreach ($files as $file) {
+                        if (strpos($file, "..") !== false || strpos($file, "/../") !== false) {
+                            http_response_code(400);
+                            resourceView([
+                                'apiResponse' => [
+                                    'status' => 'error',
+                                    'message' => 'Invalid file'
+                                ]
+                            ], 'json');
+                        }
+                    }
                 }
             }
 
@@ -1454,9 +1508,61 @@
                     ], 'json');
                 }
 
+            } else if ($type == "multiple") {
+                //size
+                $size = 0;
+                $overflow = false;
+
+                if ($driveType == "local") {
+                    foreach ($files as $file) {
+
+                        $drivePath = $driveCredentials["path"];
+                        $currentPath = $drivePath . $path . "/" . $file;
+
+                        //if running on windows, replace / with \
+                        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                            //get first 3 chars of __DIR__
+                            $dir = substr(__DIR__, 0, 3);
+                            if ($currentPath == "/") {
+                                $currentPath = $dir;
+                            } else {
+                                //remove first char
+                                $currentPath = substr($currentPath, 1);
+                                $currentPath = $dir . str_replace("/", "\\", $currentPath);
+                            }
+                        }
+
+                        //if folder
+                        if (is_dir($currentPath)) {
+                            $data = folderSize($currentPath, getAppEnvVar("COUNT_FILE_MAX"));
+                            $size += $data[0];
+
+                            if ($data[2]) {
+                                $overflow = true;
+                                break;
+                            }
+
+                        } else {
+                            //get size
+                            $size += filesize($currentPath);
+                        }
+                    }
+
+                } else if ($driveType == "ftp") {
+                    $size = -1;
+                }
+
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'success',
+                        'type' => 'multiple',
+                        'size' => $size,
+                        'driveType' => $driveType,
+                    ]
+                ], 'json');
             }
-        }
-    });
+        });
+    
 
     function pingServer($serverAddress, $port) {
         $start = microtime(true);
@@ -1473,6 +1579,24 @@
         }
 
         return $status;
+    }
+
+    function folderSize($dir, $limit) {
+        $size = 0;
+        $numberOfFiles = 0;
+        $overflow = false;
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir)) as $file) {
+            if ($file->getFilename() == "." || $file->getFilename() == "..") {
+                continue;
+            }
+            if ($numberOfFiles >= $limit) {
+                $overflow = true;
+                break;
+            }
+            $size += $file->getSize();
+            $numberOfFiles++;
+        }
+        return [$size, $overflow];
     }
 
     checkRoute('POST', '/api/fileViewer/imagePreview', function() {
@@ -1705,6 +1829,120 @@
                 imagedestroy($thumbnail);
                 die();
             }
+        }
+    });
+
+    checkRoute('POST', '/api/fileViewer/uploadFile', function() {
+        redirectNotLogin();
+
+        //$_POST = json_decode(file_get_contents("php://input"), true); //because of axios
+        if (!isset($_POST["path"]) || empty($_POST["path"]) || !isset($_POST["drive"]) || empty($_POST["drive"])) {
+            http_response_code(400);
+            die();
+        }
+
+        $path = $_POST["path"];
+        $drive = $_POST["drive"];
+
+        $drives = modelCall("drives", "getDrivesWithAccess", []);
+        $drivesCredential = "";
+
+        //check if has access
+        $hasAccess = false;
+        for ($i = 0; $i < count($drives); $i++) {
+            if ($drives[$i]["id"] == $drive) {
+                if ($drives[$i]["accessLevel"] == "edit") {
+                    $hasAccess = true;
+                    $drivesCredential = $drives[$i]["driveCredentials"];
+                }
+                break;
+            }
+        }
+
+        if (!$hasAccess) {
+            http_response_code(400);
+            resourceView([
+                'apiResponse' => [
+                    'status' => 'error',
+                    'message' => 'You do not have access to this drive'
+                ]
+            ], 'json');
+        }
+
+        //check if path doesnt contain .. or /../
+        if (strpos($path, "..") !== false || strpos($path, "/../") !== false) {
+            http_response_code(400);
+            resourceView([
+                'apiResponse' => [
+                    'status' => 'error',
+                    'message' => 'Invalid path'
+                ]
+            ], 'json');
+        }
+
+        //get drive credentials
+        $driveCredentials = json_decode($drivesCredential, true);
+        $driveType = $driveCredentials["type"];
+
+        //filepond
+        $file = $_FILES["filepond"];
+        $fileName = $file["name"];
+        $fileTmpName = $file["tmp_name"];
+
+        if ($driveType == "local") {
+            $drivePath = $driveCredentials["path"];
+            $uploadPath = $drivePath . $path . "/" . $fileName;
+
+            //if running on windows, replace / with \
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                //get first 3 chars of __DIR__
+                $dir = substr(__DIR__, 0, 3);
+                if ($uploadPath == "/") {
+                    $uploadPath = $dir;
+                } else {
+                    //remove first char
+                    $uploadPath = substr($uploadPath, 1);
+                    $uploadPath = $dir . str_replace("/", "\\", $uploadPath);
+                }
+            }
+
+            while (file_exists($uploadPath)) {
+                $fileName = "copy-" . $fileName;
+                $uploadPath = $drivePath . $path . "/" . $fileName;
+
+                //if running on windows, replace / with \
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    //get first 3 chars of __DIR__
+                    $dir = substr(__DIR__, 0, 3);
+                    if ($uploadPath == "/") {
+                        $uploadPath = $dir;
+                    } else {
+                        //remove first char
+                        $uploadPath = substr($uploadPath, 1);
+                        $uploadPath = $dir . str_replace("/", "\\", $uploadPath);
+                    }
+                }
+            }
+
+            //save
+            if (move_uploaded_file($fileTmpName, $uploadPath)) {
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'success',
+                        'message' => 'File uploaded successfully'
+                    ]
+                ], 'json');
+            } else {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Error uploading file'
+                    ]
+                ], 'json');
+            }
+        } else if ($driveType == "ftp") {
+
         }
     });
 ?>

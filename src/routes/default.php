@@ -35,6 +35,8 @@
 
     function simpleRouteCheck($path, $callback) {
         logToJsConsole('Checking SIMPLE route');
+        logToJsConsole('Request path: ' . $_ENV['REQUEST']['URI']);
+        logToJsConsole('Path: ' . $path); 
 
         //if part contain ?, remove text after ?
         if (strpos($_ENV['REQUEST']['URI'], '?') !== false) {
@@ -42,6 +44,9 @@
         } else {
             $requestPath = $_ENV['REQUEST']['URI'];
         }
+
+        logToJsConsole('Request path: ' . $_ENV['REQUEST']['URI']);
+        logToJsConsole('Path: ' . $path); 
 
         if ($requestPath == $path || $requestPath . "/" == $path || $requestPath == substr($path, 1)) {
             finishRoute($callback);

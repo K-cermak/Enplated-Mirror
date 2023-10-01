@@ -1,6 +1,8 @@
 @include ("partials/head")
 @include ("partials/header")
+<link href="{{ env('BASE_URL') }}/public/css/filepond.css" rel="stylesheet">
 <script src="{{ env('BASE_URL') }}/public/js/fileExplorer.js"></script>
+<script src="{{ env('BASE_URL') }}/public/js/filepond.js"></script>
 <script>
     let baseUrl = "{{ env('BASE_URL') }}";
     let allowPreviews = "{{ env('ALLOW_PREVIEWS') }}";
@@ -13,6 +15,7 @@
             <div class="row card-title">
                 <div class="col-sm-8 mainPath"></div>
                 <div class="col-sm-4 text-end mt-1 toolbar">
+                    <i class="bi bi-upload mt-2 mx-2 uploadButton"></i>
                     <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
                     <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
                     <i class="bi bi-arrow-bar-left mt-2 mx-2 panelSwitcher d-none d-md-inline"></i>
@@ -21,8 +24,31 @@
             <div>
                 <div class="row folders mt-3 mb-5"></div>
             </div>
-            <div class="infoPanel border-top w-100 ps-2">
+            <div class="infoPanel border-top w-100 ps-2 d-flex justify-content-between">
                 <small class="text-muted infoData">No file selected.</small>
+                <span class="nav-item dropdown">
+                    <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots me-2"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Action</a></li>
+                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        <!--
+                            - selected file / files / folder
+                                - download (as zip for multiple or folder)
+                                - copy to clip
+                                - vyjmout 
+                                -   delete (edit)
+                                - rychle duplikovat (edit second)
+
+                            - other
+                                - open same location in another bar
+                                - upload (edit)
+                        --->
+                    </ul>
+                </span>
             </div>
         </div>
     </div>
@@ -32,6 +58,7 @@
             <div class="row card-title">
                 <div class="col-sm-8 mainPath"></div>
                 <div class="col-sm-4 text-end mt-1 toolbar">
+                    <i class="bi bi-upload mt-2 mx-2 uploadButton"></i>
                     <i class="bi bi-folder-plus mt-2 mx-2 addFolderButton"></i>
                     <i class="bi bi-arrow-clockwise mt-2 mx-2 refreshButton"></i>
                 </div>
@@ -39,11 +66,38 @@
             <div>
                 <div class="row folders mt-3 mb-5"></div>
             </div>
-            <div class="infoPanel border-top w-100 ps-2">
+            <div class="infoPanel border-top w-100 ps-2 d-flex justify-content-between">
                 <small class="text-muted infoData">No file selected.</small>
+                <span class="nav-item dropdown">
+                    <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots me-2"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Action</a></li>
+                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    </ul>
+                </span>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" tabindex="-1" id="uploadFile">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Maximum file size: @php echo ini_get('upload_max_filesize') @endphp.</p>
+                    <input type="file" multiple credits={} id="filepondInput"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div class="modal fade" tabindex="-1" id="newFolder">
         <div class="modal-dialog modal-dialog-centered">
@@ -65,6 +119,8 @@
             </div>
         </div>
     </div>
+
+
 </div>
 
 
@@ -102,7 +158,7 @@
     }
 
     .folderDataFolder:hover, .folderDataFile:hover, .folderDataDrive:hover {
-        background-color: #d1e7ff;
+        background-color: #e3eeff;
         cursor: pointer;
     }
     .selectedItem {
