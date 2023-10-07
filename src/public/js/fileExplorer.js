@@ -32,6 +32,8 @@ window.addEventListener("load", function() {
         arrow.classList.add("bi-arrow-bar-right");
         document.querySelector(".mainDrive").style.width = "50%";
         document.querySelector(".secondDrive").style.display = "flex";
+    } else {
+        document.querySelector("#openRight").classList.add("disabled")
     }
 
     document.querySelectorAll(".refreshButton").forEach(function (refreshButton) {
@@ -48,12 +50,14 @@ window.addEventListener("load", function() {
             document.querySelector(".mainDrive").style.width = "100%";
             document.querySelector(".secondDrive").style.display = "none";
             sessionStorage.setItem("splittedView", "false");
+            document.querySelector("#openRight").classList.add("disabled");
         } else {
             arrow.classList.remove("bi-arrow-bar-left");
             arrow.classList.add("bi-arrow-bar-right");
             document.querySelector(".mainDrive").style.width = "50%";
             document.querySelector(".secondDrive").style.display = "flex";
             sessionStorage.setItem("splittedView", "true");
+            document.querySelector("#openRight").classList.remove("disabled");
             generateFolders(2);
         }
     });
@@ -66,6 +70,7 @@ window.addEventListener("load", function() {
 
     var uploadFileModal = new bootstrap.Modal(document.querySelector("#uploadFile"));
     var newFolderModal = new bootstrap.Modal(document.querySelector("#newFolder"));
+    var deleteConfirmModal = new bootstrap.Modal(document.querySelector("#deleteConfirm"));
     var selectedFolderModal;
 
     //close of modal
@@ -133,6 +138,105 @@ window.addEventListener("load", function() {
                 }
                 newFolderModal.hide();
                 document.querySelector("#newFolderName").value = "";
+            } else {
+                genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
+            }
+        })
+        .catch(function (error) {
+            genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
+        });
+    });
+
+    document.querySelector("#openRight").addEventListener("click", event => {
+        sessionStorage.setItem("currentPath2", sessionStorage.getItem("currentPath1"));
+        sessionStorage.setItem("currentDrive2", sessionStorage.getItem("currentDrive1"));
+        sessionStorage.setItem("currentDriveName2", sessionStorage.getItem("currentDriveName1"));
+        sessionStorage.setItem("driveAccessLevel2", sessionStorage.getItem("driveAccessLevel1"));
+        sessionStorage.setItem("driveType2", sessionStorage.getItem("driveType1"));
+        generateFolders(2);
+    });
+
+    document.querySelector("#openLeft").addEventListener("click", event => {
+        sessionStorage.setItem("currentPath1", sessionStorage.getItem("currentPath2"));
+        sessionStorage.setItem("currentDrive1", sessionStorage.getItem("currentDrive2"));
+        sessionStorage.setItem("currentDriveName1", sessionStorage.getItem("currentDriveName2"));
+        sessionStorage.setItem("driveAccessLevel1", sessionStorage.getItem("driveAccessLevel2"));
+        sessionStorage.setItem("driveType1", sessionStorage.getItem("driveType2"));
+        generateFolders(1);
+    });
+
+    document.querySelectorAll(".downloadButton").forEach(function (downloadButton) {
+        downloadButton.addEventListener("click", event => {
+            selectedFolderModal = event.target.closest(".tabInfo").getAttribute("dataId");
+            
+            files = [];
+            selector = "mainDrive";
+            if (selectedFolderModal == 2) {
+                selector = "secondDrive";
+            }
+            for (let i = 0; i < document.querySelectorAll("." + selector + " .selectedItem").length; i++) {
+                files.push(document.querySelectorAll("." + selector + " .selectedItem")[i].querySelector(".folderName h6").getAttribute("fullName"));
+            }
+
+            genFlashMessage("The download will start in just a few moments...", "info", 5000);
+
+            axios.post(baseUrl + '/api/fileViewer/download', {
+                path: sessionStorage.getItem("currentPath" + selectedFolderModal),
+                drive: sessionStorage.getItem("currentDrive" + selectedFolderModal),
+                files: JSON.stringify(files)
+            }, { responseType: 'blob' })
+            .then(function (response) {
+                var reader = new window.FileReader();
+                reader.readAsDataURL(response.data); 
+                reader.onload = function() {
+                    var link = document.createElement('a');
+                    link.href = reader.result;
+                    if (files.length == 1) {
+                        link.download = files[0];
+                    } else {
+                        link.download = "files.zip";
+                    }
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            })
+            .catch(function (error) {
+                genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
+            });
+        });
+    });
+                    
+
+    document.querySelectorAll(".deleteButton").forEach(function (deleteButton) {
+        deleteButton.addEventListener("click", event => {
+            selectedFolderModal = event.target.closest(".tabInfo").getAttribute("dataId");
+            deleteConfirmModal.show();
+        });
+    });
+
+    document.querySelector("#deleteConfirmButton").addEventListener("click", event => {
+        files = [];
+        selector = "mainDrive";
+        if (selectedFolderModal == 2) {
+            selector = "secondDrive";
+        }
+        for (let i = 0; i < document.querySelectorAll("." + selector + " .selectedItem").length; i++) {
+            files.push(document.querySelectorAll("." + selector + " .selectedItem")[i].querySelector(".folderName h6").getAttribute("fullName"));
+        }
+        axios.post(baseUrl + '/api/fileViewer/delete', {
+            path: sessionStorage.getItem("currentPath" + selectedFolderModal),
+            drive: sessionStorage.getItem("currentDrive" + selectedFolderModal),
+            files: JSON.stringify(files)
+        })
+        .then(function (response) {
+            if (response.data.apiResponse.status == "success") {
+                genFlashMessage("File/s deleted successfully.", "success", 5000);
+                generateFolders(1);
+                if (sessionStorage.getItem("splittedView") == "true") {
+                    generateFolders(2);
+                }
+                deleteConfirmModal.hide();
             } else {
                 genFlashMessage("During the process, an error occurred. Please refresh page and try again.", "error", 20000)
             }
@@ -240,6 +344,8 @@ function generateFolders(panel) {
             generatePath(panel);
         }
 
+        document.querySelector("." + selector + " .downloadButton").classList.add("disabled");
+        document.querySelector("." + selector + " .deleteButton").classList.add("disabled");
 
         document.querySelector("." + selector + " .infoData").innerHTML = "No file selected.";
         if (document.querySelectorAll("." + selector + " .folderDataFile").length > 0) {
@@ -366,10 +472,12 @@ function selectDrive(panel) {
 
 function selectFolder(panel) {
     let folderDataFolders;
+    let selector = "mainDrive";
     if (panel == 1) {
         folderDataFolders = document.querySelectorAll('.mainDrive .folderDataFolder');
     } else if (panel == 2) {
         folderDataFolders = document.querySelectorAll('.secondDrive .folderDataFolder');
+        selector = "secondDrive";
     }
 
     folderDataFolders.forEach(function (folderDataFolder) {
@@ -381,8 +489,16 @@ function selectFolder(panel) {
             //if folder is already selected, deselect it
             if (folderDataFolder.classList.contains('selectedItem') && (event.ctrlKey || event.metaKey)) {
                 folderDataFolder.classList.remove('selectedItem');
+                if (document.querySelectorAll("." + selector + " .selectedItem").length == 0) {
+                    document.querySelector("." + selector + " .downloadButton").classList.add("disabled");
+                    document.querySelector("." + selector + " .deleteButton").classList.add("disabled");
+                }
             } else {
                 folderDataFolder.classList.add('selectedItem');
+                document.querySelector("." + selector + " .downloadButton").classList.remove("disabled");
+                if (sessionStorage.getItem("driveAccessLevel" + panel) == "edit") {
+                    document.querySelector("." + selector + " .deleteButton").classList.remove("disabled");
+                }
             }
 
             event.stopPropagation();
@@ -400,10 +516,12 @@ function selectFolder(panel) {
 
 function selectFiles(panel) {
     let folderDataFiles;
+    let selector = "mainDrive";
     if (panel == 1) {
         folderDataFiles = document.querySelectorAll('.mainDrive .folderDataFile');
     } else if (panel == 2) {
         folderDataFiles = document.querySelectorAll('.secondDrive .folderDataFile');
+        selector = "secondDrive";
     }
 
     folderDataFiles.forEach(function (folderDataFile) {
@@ -415,8 +533,16 @@ function selectFiles(panel) {
             //if file is already selected, deselect it
             if (folderDataFile.classList.contains('selectedItem') && (event.ctrlKey || event.metaKey)) {
                 folderDataFile.classList.remove('selectedItem');
+                if (document.querySelectorAll("." + selector + " .selectedItem").length == 0) {
+                    document.querySelector("." + selector + " .downloadButton").classList.add("disabled");
+                    document.querySelector("." + selector + " .deleteButton").classList.add("disabled");
+                }
             } else {
                 folderDataFile.classList.add('selectedItem');
+                document.querySelector("." + selector + " .downloadButton").classList.remove("disabled");
+                if (sessionStorage.getItem("driveAccessLevel" + panel) == "edit") {
+                    document.querySelector("." + selector + " .deleteButton").classList.remove("disabled");
+                }
             }
 
             event.stopPropagation();
@@ -432,6 +558,8 @@ function deselectAllClear(panel) {
     }
 
     document.querySelector("." + selector + " .infoData").innerHTML = "No file selected.";
+    document.querySelector("." + selector + " .downloadButton").classList.add("disabled");
+    document.querySelector("." + selector + " .deleteButton").classList.add("disabled");
 
     let length = document.querySelectorAll("." + selector + " .selectedItem").length;
     for (let i = 0; i < length; i++) {
@@ -489,6 +617,15 @@ function getFileInfo(panel, nameOfElement, type) {
                 })
             });
             
+        }
+    } else if (length == 0) {
+        document.querySelector("." + selector + " .infoData").innerHTML = "No file selected.";
+        if (document.querySelectorAll("." + selector + " .folderDataFile").length > 0) {
+            let plural = "s";
+            if (document.querySelectorAll("." + selector + " .folderDataFile").length == 1) {
+                plural = "";
+            }
+            document.querySelector("." + selector + " .infoData").innerHTML += " " + document.querySelectorAll("." + selector + " .folderDataFile").length + " file"+plural+" in folder.";
         }
     } else if (type == "drive") {
         axios.post(baseUrl + '/api/fileViewer/getFileInfo', {

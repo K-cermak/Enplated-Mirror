@@ -31,22 +31,10 @@
                         <i class="bi bi-three-dots me-2"></i>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                        <li><a class="dropdown-item downloadButton" href="#"><i class="bi bi-download text-primary"></i> Download</a></li>
+                        <li><a class="dropdown-item deleteButton" href="#"><i class="bi bi-trash3-fill text-danger"></i> Delete</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        <!--
-                            - selected file / files / folder
-                                - download (as zip for multiple or folder)
-                                - copy to clip
-                                - vyjmout 
-                                -   delete (edit)
-                                - rychle duplikovat (edit second)
-
-                            - other
-                                - open same location in another bar
-                                - upload (edit)
-                        --->
+                        <li><a class="dropdown-item" href="#" id="openRight"><i class="bi bi-arrow-return-right"></i> Open the same folder on right</a></li>
                     </ul>
                 </span>
             </div>
@@ -73,10 +61,10 @@
                         <i class="bi bi-three-dots me-2"></i>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#">Action</a></li>
-                        <li><a class="dropdown-item" href="#">Another action</a></li>
+                        <li><a class="dropdown-item downloadButton" href="#"><i class="bi bi-download text-primary"></i> Download</a></li>
+                        <li><a class="dropdown-item deleteButton" href="#"><i class="bi bi-trash3-fill text-danger"></i> Delete</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        <li><a class="dropdown-item" href="#" id="openLeft"><i class="bi bi-arrow-return-left"></i> Open the same folder on left</a></li>
                     </ul>
                 </span>
             </div>
@@ -119,6 +107,19 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" tabindex="-1" id="deleteConfirm">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p class="text-center">Are you sure you want to delete selected file/s?</p>
+                    <div class="d-flex justify-content-between mt-4 pt-2">
+                        <button class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-danger px-3" id="deleteConfirmButton">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
 </div>
