@@ -1942,7 +1942,57 @@
                 ], 'json');
             }
         } else if ($driveType == "ftp") {
+            $drivePath = $driveCredentials["path"];
+            $serverAddress = $driveCredentials["serverAddress"];
+            $port = $driveCredentials["port"];
+            $username = $driveCredentials["username"];
+            $password = $driveCredentials["password"];
 
+            //try to connect
+            $ftp_conn = ftp_connect($serverAddress, $port, 10);
+            if (!$ftp_conn) {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'type' => 'error-connecting-to-server',
+                        'message' => 'Error connecting to server'
+                    ]
+                ], 'json');
+            }
+
+            //try to login
+            if (!ftp_login($ftp_conn, $username, $password)) {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'type' => 'error-logging-in',
+                        'message' => 'Error logging in'
+                    ]
+                ], 'json');
+            }
+
+            //upload
+            if (!ftp_put($ftp_conn, $drivePath . $path . "/" . $fileName, $fileTmpName, FTP_BINARY)) {
+                http_response_code(400);
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'error',
+                        'message' => 'Error uploading file'
+                    ]
+                ], 'json');
+            }
+
+            //close connection
+            ftp_close($ftp_conn);
+
+            resourceView([
+                'apiResponse' => [
+                    'status' => 'success',
+                    'message' => 'File uploaded successfully'
+                ]
+            ], 'json');
         }
     });
 
@@ -2079,7 +2129,79 @@
                 ], 'json');
 
             } else if ($driveType == "ftp") {
-                //todo
+                $drivePath = $driveCredentials["path"];
+                $serverAddress = $driveCredentials["serverAddress"];
+                $port = $driveCredentials["port"];
+                $username = $driveCredentials["username"];
+                $password = $driveCredentials["password"];
+
+                //try to connect
+                $ftp_conn = ftp_connect($serverAddress, $port, 10);
+                if (!$ftp_conn) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'type' => 'error-connecting-to-server',
+                            'message' => 'Error connecting to server'
+                        ]
+                    ], 'json');
+                }
+
+                //try to login
+                if (!ftp_login($ftp_conn, $username, $password)) {
+                    http_response_code(400);
+                    resourceView([
+                        'apiResponse' => [
+                            'status' => 'error',
+                            'type' => 'error-logging-in',
+                            'message' => 'Error logging in'
+                        ]
+                    ], 'json');
+                }
+
+                $path = $drivePath . $path;
+
+                foreach ($files as $file) {
+                    $file = $path . "/" . $file;
+
+                    //check if file exists
+                    if (!ftp_size($ftp_conn, $file)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'message' => 'File does not exist'
+                            ]
+                        ], 'json');
+                    }
+
+                    //if dir
+                    if (ftp_size($ftp_conn, $file) == -1) {
+                        deleteFolderFtp($file, $ftp_conn);
+                    } else {
+                        //delete
+                        if (!ftp_delete($ftp_conn, $file)) {
+                            http_response_code(400);
+                            resourceView([
+                                'apiResponse' => [
+                                    'status' => 'error',
+                                    'message' => 'Error deleting file'
+                                ]
+                            ], 'json');
+                        }
+                    }
+                }
+
+                //close connection
+                ftp_close($ftp_conn);
+
+                resourceView([
+                    'apiResponse' => [
+                        'status' => 'success',
+                        'message' => 'File deleted successfully'
+                    ]
+                ], 'json');
             }
         }
     });
@@ -2090,6 +2212,22 @@
             (is_dir("$dir/$file")) ? deleteFolder("$dir/$file") : unlink("$dir/$file");
         }
         return rmdir($dir);
+    }
+
+    function deleteFolderFtp($dir, $ftpConnect) {
+        $files = ftp_nlist($ftpConnect, $dir);
+
+        foreach ($files as $file) {
+            if ($file == "." || $file == "..") {
+                continue;
+            }
+            if (ftp_size($ftpConnect, $file) == -1) {
+                deleteFolderFtp($file, $ftpConnect);
+            } else {
+                ftp_delete($ftpConnect, $file);
+            }
+        }
+        return ftp_rmdir($ftpConnect, $dir);
     }
 
     checkRoute('POST', '/api/fileViewer/download', function() {
@@ -2210,9 +2348,6 @@
                                 if ($fileInDir->isDir()) {
                                     $zip->addEmptyDir($fileInDir->getFilename());
                                 } else {
-                                    //echo $file . "/" . $fileInDir->getFilename() . "<br>";
-                                    //echo $fileInDir->getFilename() . "<br>";
-                                    //echo "<br><br>";
                                     $zip->addFile($fileInDir->getPathname(), $file . "/" . $fileInDir->getFilename());
                                 }
                             }
@@ -2222,8 +2357,6 @@
                         }
                     }
 
-
-
                     $zip->close();
 
                     //download
@@ -2231,7 +2364,6 @@
                     header('Content-disposition: attachment; filename=' . $zipName);
                     header('Content-Length: ' . filesize($zipPath));
                     readfile($zipPath);
-
 
                     //delete zip
                     unlink($zipPath);
@@ -2278,7 +2410,79 @@
 
 
             } else if ($driveType == "ftp") {
-                //todo
+                //if multiple files, zip it
+                if (count($files) > 1 || is_dir($driveCredentials["path"] . $path . "/" . $files[0])) {
+                    //add in future version
+                } else {
+                    $file = $files[0];
+
+                    $drivePath = $driveCredentials["path"];
+                    $serverAddress = $driveCredentials["serverAddress"];
+                    $port = $driveCredentials["port"];
+                    $username = $driveCredentials["username"];
+                    $password = $driveCredentials["password"];
+
+                    //try to connect
+                    $ftp_conn = ftp_connect($serverAddress, $port, 10);
+                    if (!$ftp_conn) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-connecting-to-server',
+                                'message' => 'Error connecting to server'
+                            ]
+                        ], 'json');
+                    }
+
+                    //try to login
+                    if (!ftp_login($ftp_conn, $username, $password)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'type' => 'error-logging-in',
+                                'message' => 'Error logging in'
+                            ]
+                        ], 'json');
+                    }
+
+                    $path = $drivePath . $path . "/" . $file;
+
+                    //check if file exists
+                    if (!ftp_size($ftp_conn, $path)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'message' => 'File does not exist'
+                            ]
+                        ], 'json');
+                    }
+
+                    //save to temp
+                    $tempFile = tempnam(sys_get_temp_dir(), 'temp');
+                    if (!ftp_get($ftp_conn, $tempFile, $path, FTP_BINARY)) {
+                        http_response_code(400);
+                        resourceView([
+                            'apiResponse' => [
+                                'status' => 'error',
+                                'message' => 'Error getting file'
+                            ]
+                        ], 'json');
+                    }
+
+                    //close connection
+                    ftp_close($ftp_conn);
+
+                    //download
+                    header('Content-Type: application/octet-stream');
+                    header('Content-disposition: attachment; filename=' . $file);
+                    header('Content-Length: ' . filesize($tempFile));
+                    readfile($tempFile);
+                }
+
+                die();
             }
         }
     });

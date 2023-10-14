@@ -495,7 +495,9 @@ function selectFolder(panel) {
                 }
             } else {
                 folderDataFolder.classList.add('selectedItem');
-                document.querySelector("." + selector + " .downloadButton").classList.remove("disabled");
+                if (sessionStorage.getItem("driveType" + panel) != "ftp") {
+                    document.querySelector("." + selector + " .downloadButton").classList.remove("disabled");
+                }
                 if (sessionStorage.getItem("driveAccessLevel" + panel) == "edit") {
                     document.querySelector("." + selector + " .deleteButton").classList.remove("disabled");
                 }
@@ -536,10 +538,16 @@ function selectFiles(panel) {
                 if (document.querySelectorAll("." + selector + " .selectedItem").length == 0) {
                     document.querySelector("." + selector + " .downloadButton").classList.add("disabled");
                     document.querySelector("." + selector + " .deleteButton").classList.add("disabled");
+                } else if (sessionStorage.getItem("driveType" + panel) == "ftp" && document.querySelectorAll("." + selector + " .selectedItem").length == 1) {
+                    document.querySelector("." + selector + " .downloadButton").classList.remove("disabled");
                 }
             } else {
                 folderDataFile.classList.add('selectedItem');
-                document.querySelector("." + selector + " .downloadButton").classList.remove("disabled");
+                if (sessionStorage.getItem("driveType" + panel) != "ftp" || (sessionStorage.getItem("driveType" + panel) == "ftp" && document.querySelectorAll("." + selector + " .selectedItem").length == 1)) {
+                    document.querySelector("." + selector + " .downloadButton").classList.remove("disabled");
+                } else if (sessionStorage.getItem("driveType" + panel) == "ftp" && document.querySelectorAll("." + selector + " .selectedItem").length > 1) {
+                    document.querySelector("." + selector + " .downloadButton").classList.add("disabled");
+                }
                 if (sessionStorage.getItem("driveAccessLevel" + panel) == "edit") {
                     document.querySelector("." + selector + " .deleteButton").classList.remove("disabled");
                 }
