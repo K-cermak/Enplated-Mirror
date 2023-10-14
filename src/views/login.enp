@@ -82,8 +82,11 @@
                         </h2>
                         <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#help">
                             <div class="accordion-body">
-                                //TODO
-                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Laboriosam odio fugiat ipsa odit illum, recusandae veniam assumenda ut. Quisquam provident id qui nam, aliquam velit error nisi possimus atque impedit?</p>
+                                <p class="lead"><strong>I forgot not-admin account password</strong></p>
+                                <p class="fw-light">If you do not use admin account, please contact your administrator and ask him to reset your password.</p>
+
+                                <p class="lead mt-5"><strong>Reset your hashed password in database</strong></p>
+                                <p class="fw-light">Log in to your web server and find the file <kbd>/engine/database/db.sqlite</kbd> and in the <kbd>users</kbd> table change the sha256 hash for your account.</p>
                             </div>
                         </div>
                     </div>
