@@ -20,7 +20,7 @@
                 <div class='d-flex align-items-center justify-content-center vh-100' style='background-color: #222222;'>
                     <div class='text-center'>
                     <h1 class='display-1 fw-bold mb-4'>Error | <span class='text-warning'>404</span></h1>
-                        <p class='lead'>Sorry, but this page does not exist. It may have been deleted or moved.</p>
+                        <p class='lead'>Sorry, but this page or file does not exist. It may have been deleted or moved.</p>
                     </div>
                 </div>
             </body>

@@ -19,7 +19,7 @@
         <div class='d-flex align-items-center justify-content-center vh-100' style='background-color: #222222;'>
             <div class='text-center'>
             <h1 class='display-1 fw-bold mb-4'>Error | <span class="text-danger">500</span></h1>
-                <p class='lead'>>We apologize, but there was an error on the server. Please try again or in a moment.</p>
+                <p class='lead'>We apologize, but there was an error on the server. Please try again or in a moment.</p>
             </div>
         </div>
     </body>

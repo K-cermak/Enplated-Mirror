@@ -34,6 +34,12 @@
 
     <div class="container my-5">
         <div class="accordion" id="drivesList">
+            @if (count($drives) == 0)
+                <div class="alert alert-primary text-center fade show my-3 w-100" role="alert">
+                    There are no drives yet.
+                </div>
+            @endif
+
             @foreach ($drives as $drive)
                 @php
                     //decode the json string
@@ -252,6 +258,10 @@
                     let privileges = JSON.parse(response.data.apiResponse.privileges);
                     let groupPlace = document.querySelector(".groupPlace");
                     groupPlace.innerHTML = "";
+
+                    if (allGroups.length == 0) {
+                        groupPlace.innerHTML = `<div class="alert alert-primary text-center fade show my-3 w-100" role="alert">There are no groups yet.</div>`;
+                    }
 
                     for (let i = 0; i < allGroups.length; i++) {
                         groupPlace.innerHTML +=

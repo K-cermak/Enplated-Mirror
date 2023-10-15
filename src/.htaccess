@@ -8,7 +8,8 @@ RewriteRule ^public/(.*)$ public/$1 [L]
 RewriteRule ^.well-known/(.*)$ .well-known/$1 [L]
 
 # redirect all of the /.cdn-data requests to /.cdn-data
-RewriteRule ^.cdn-data/(.*)$ .cdn-data/$1 [L]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^cdn-data/(.*)$ cdn-data/$1 [L]
 
 # otherwise, redirect to index.php
 RewriteRule ^ index.php
